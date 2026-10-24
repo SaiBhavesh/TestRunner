@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS orders (
     report_token TEXT NOT NULL,
     study_token TEXT UNIQUE,
     payment_id TEXT UNIQUE,
+    checkout_id TEXT,
     amount_usd REAL,
     paid_at TEXT,
     product_summary TEXT,
@@ -103,6 +104,9 @@ def init() -> None:
     with connect() as conn:
         conn.execute("PRAGMA journal_mode=WAL")
         conn.executescript(SCHEMA)
+        # Databases created before Milestone 4 lack this column.
+        if "checkout_id" not in {r["name"] for r in conn.execute("PRAGMA table_info(orders)")}:
+            conn.execute("ALTER TABLE orders ADD COLUMN checkout_id TEXT")
     from app.agent.report import seed_prompt_v1
 
     seed_prompt_v1()

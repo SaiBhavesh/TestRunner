@@ -3,9 +3,9 @@
 An agent-run company that tests websites. Solari does the browser work, Terac supplies real human testers,
 Gemini writes the analysis, Whop collects the money. Full spec: [TESTRUNNER_SPEC.md](TESTRUNNER_SPEC.md).
 
-**Status: Milestone 3.** Solari (browser scan + axe-core accessibility + basic SEO), Gemini and Exa are real
-(`MOCK_SOLARI=0`, `MOCK_GEMINI=0`, `MOCK_EXA=0` with keys in `.env`). Whop and Terac are still mocks: data marked
-`[mock]`, and setting their `MOCK_*=0` raises a clear "not built yet" error.
+**Status: Milestone 4 (Quick Check only) + deploy.** Solari (browser scan + axe-core accessibility + basic SEO),
+Gemini, Exa and Whop are real (`MOCK_*=0` with keys set). Terac is still a mock. Only Quick Check ($5) is for sale:
+Human Test is hidden (`HUMAN_TEST_ENABLED=0`) because Terac's confirmed price is $30 per tester.
 
 Run only one server against a database at a time: each server has a worker, and two workers on the same
 `testrunner.db` will both process the same order.
@@ -63,6 +63,8 @@ Google is busy (the adapter waits and retries on 429/503). The report shows real
 ## Deploy (Render)
 
 One paid web service with a persistent disk (the free plan erases the SQLite file whenever it sleeps).
+`render.yaml` is a Blueprint for exactly this: Render dashboard → **New → Blueprint** → pick this repo. It asks
+for the secret values (`sync: false` entries) once, on creation.
 
 - **Runtime:** Python (version pinned by `.python-version`). **Build:** `pip install -r requirements.txt`.
   **Start:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Keep it to ONE instance and ONE uvicorn
@@ -81,11 +83,23 @@ FastAPI web app + SQLite + an in-process worker thread (`app/worker.py`) that ad
 at a time (`app/agent/pipeline.py`). Every status change writes an `events` row; agent decisions are
 `type='decision'` events shown on `/ops`. External services live in `app/adapters/`.
 
+## Whop (Milestone 4, Quick Check)
+
+Four settings: `WHOP_API_KEY` (Account API key), `WHOP_WEBHOOK_SECRET` (`ws_...`, from the webhook you create for
+`https://<your-app>/webhooks/whop` with event `payment.succeeded`), `WHOP_BUSINESS_ID` (`biz_...`) and
+`WHOP_PLAN_QUICK` (`plan_...`, a $5 one-time plan). With `MOCK_WHOP=0` the app refuses to start if one is missing.
+
+Flow: Buy → `POST /checkout_configurations` (plan, `metadata.order_id`, `redirect_url` back to the order page) →
+customer pays on Whop → `payment.succeeded` webhook (signature checked with `whop_sdk`'s `unwrap`) → the payment is
+re-read from `GET /payments/{id}` and must be `paid`, for this order, and at least the price. If the webhook never
+arrives, the order page itself asks Whop (`GET /payments?checkout_configuration_ids=...`, at most every 10 s).
+
 ## Integration notes (spec section 13)
 
 Unverified items. The mocks deliberately make no claims about the real APIs:
-- **Whop:** mock webhooks use our own `X-Mock-Signature` HMAC format, not Whop's. Real signature scheme,
-  checkout metadata, refunds API: to verify in M4.
+- **Whop (verified from docs.whop.com, M4):** see the Whop section. Not yet checked against a live payment:
+  whether `purchase_url` is a full URL (the app refuses a bare path rather than guessing a host), that `usd_total`
+  is in dollars, and how the list endpoint wants array query parameters. Refunds API: not built.
 - **Terac:** REST launch API, completion-URL format, and the query parameter Terac uses for participant ids
   (`TERAC_PARTICIPANT_PARAM`, default `participant_id` is a placeholder) are to verify in M6. Until then the
   participant form shows a completion code.

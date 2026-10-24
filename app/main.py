@@ -2,6 +2,8 @@
 import hmac
 import json
 import secrets
+import sqlite3
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -13,6 +15,7 @@ from pydantic import BaseModel
 
 from app import config, db, worker
 from app.adapters import whop
+from app.log import log
 from app.urlguard import validate_public_url
 
 HERE = Path(__file__).resolve().parent
@@ -32,6 +35,11 @@ async def lifespan(app: FastAPI):
 if config.MOCK_WHOP and not config.IS_LOCAL and not config.WHOP_WEBHOOK_SECRET:
     # The mock fallback secret is in this public repo; anyone could fake payments on a public deploy.
     raise RuntimeError("MOCK_WHOP=1 on a public URL needs WHOP_WEBHOOK_SECRET set to your own random value")
+if not config.MOCK_WHOP:
+    _missing = [n for n in ("WHOP_API_KEY", "WHOP_WEBHOOK_SECRET", "WHOP_BUSINESS_ID", "WHOP_PLAN_QUICK")
+                if not getattr(config, n)]
+    if _missing:
+        raise RuntimeError(f"MOCK_WHOP=0 needs these settings: {', '.join(_missing)}")
 
 app = FastAPI(title="TestRunner", lifespan=lifespan)
 config.SHOTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -58,6 +66,8 @@ def index(request: Request):
 def create_order(body: OrderIn):
     if body.tier not in config.PRICES:
         raise HTTPException(400, "tier must be 'quick' or 'human'")
+    if body.tier == "human" and not config.HUMAN_TEST_ENABLED:
+        raise HTTPException(400, "Human Test is coming soon. Only Quick Check is available right now.")
     try:
         url = validate_public_url(body.url)
     except ValueError as e:
@@ -80,7 +90,10 @@ def create_order(body: OrderIn):
          db.now(), db.now()),
     )
     db.log_event(order_id, "transition", f"Order created ({config.TIER_NAMES[body.tier]})", None, "created")
-    return {"order_id": order_id, "checkout_url": whop.checkout_url(order_id, body.tier)}
+    checkout = whop.create_checkout(order_id, body.tier)
+    if checkout["checkout_id"]:
+        db.update_order(order_id, checkout_id=checkout["checkout_id"])
+    return {"order_id": order_id, "checkout_url": checkout["url"]}
 
 
 def _order_or_404(order_id: str) -> dict:
@@ -90,9 +103,31 @@ def _order_or_404(order_id: str) -> dict:
     return order
 
 
+_last_payment_check: dict[str, float] = {}
+PAYMENT_CHECK_EVERY_SEC = 10
+
+
+def _check_payment(order: dict) -> dict:
+    """Server-side payment check, for when Whop's webhook hasn't arrived. At most every 10s per order."""
+    if config.MOCK_WHOP or order["status"] != "created" or not order["checkout_id"]:
+        return order
+    if time.monotonic() - _last_payment_check.get(order["id"], 0) < PAYMENT_CHECK_EVERY_SEC:
+        return order
+    _last_payment_check[order["id"]] = time.monotonic()
+    try:
+        payment = whop.find_paid_payment(order["checkout_id"])
+    except Exception:
+        # Logged, and the page still loads; the webhook or the next refresh can still mark it paid.
+        log.exception("Whop payment check failed for order num %s", order["num"])
+        return order
+    if payment:
+        _mark_paid(order, payment, source="payment check")
+    return db.get_order(order["id"])
+
+
 @app.get("/order/{order_id}", response_class=HTMLResponse)
 def order_page(request: Request, order_id: str):
-    order = _order_or_404(order_id)
+    order = _check_payment(_order_or_404(order_id))
     return templates.TemplateResponse(request, "order.html", {"order": order})
 
 
@@ -122,18 +157,29 @@ async def whop_webhook(request: Request):
         event = whop.parse_webhook(body, request.headers)
     except (ValueError, KeyError) as e:
         raise HTTPException(400, f"Invalid webhook: {e}")
+    if event is None:
+        return {"ok": True, "ignored": True}
     order = db.get_order(event["order_id"])
     if order is None:
         raise HTTPException(404, "Unknown order")
+    return JSONResponse(_mark_paid(order, event, source="webhook"))
+
+
+def _mark_paid(order: dict, payment: dict, source: str) -> dict:
+    """Mark an order paid once. Shared by the webhook and the server-side payment check."""
     if order["status"] != "created" or order["payment_id"]:
         return {"ok": True, "duplicate": True}
     price = config.PRICES[order["tier"]]
-    if event["amount_usd"] < price:
+    if payment["amount_usd"] < price:
         db.log_event(order["id"], "decision",
-                     f"Payment of ${event['amount_usd']:.2f} is below the ${price:.2f} price; not marking paid.")
-        return JSONResponse({"ok": False, "error": "amount below price"}, status_code=200)
-    db.set_status(order["id"], "paid", f"Whop payment received (${event['amount_usd']:.2f})",
-                  payment_id=event["payment_id"], amount_usd=event["amount_usd"], paid_at=db.now())
+                     f"Payment of ${payment['amount_usd']:.2f} is below the ${price:.2f} price; not marking paid.")
+        return {"ok": False, "error": "amount below price"}
+    try:
+        db.set_status(order["id"], "paid", f"Whop payment received (${payment['amount_usd']:.2f}, {source})",
+                      payment_id=payment["payment_id"], amount_usd=payment["amount_usd"], paid_at=db.now())
+    except sqlite3.IntegrityError:
+        # The webhook and the payment check raced; the other one already recorded this payment.
+        return {"ok": True, "duplicate": True}
     return {"ok": True}
 
 

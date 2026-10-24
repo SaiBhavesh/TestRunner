@@ -1,0 +1,47 @@
+# Render Blueprint: one web service with a 1 GB persistent disk for SQLite and screenshots.
+# Keep ONE instance: the background worker runs inside the web process.
+services:
+  - type: web
+    name: testrunner
+    runtime: python
+    plan: 0.5c-512mb
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DB_PATH
+        value: /var/data/testrunner.db
+      - key: SHOTS_DIR
+        value: /var/data/shots
+      - key: MOCK_SOLARI
+        value: "0"
+      - key: MOCK_GEMINI
+        value: "0"
+      - key: MOCK_EXA
+        value: "0"
+      - key: MOCK_WHOP
+        value: "0"
+      - key: MOCK_TERAC
+        value: "1"
+      - key: HUMAN_TEST_ENABLED
+        value: "0"
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      # Secrets: Render asks for these when the Blueprint is created.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: EXA_API_KEY
+        sync: false
+      - key: SOLARI_API_KEY
+        sync: false
+      - key: WHOP_API_KEY
+        sync: false
+      - key: WHOP_WEBHOOK_SECRET
+        sync: false
+      - key: WHOP_BUSINESS_ID
+        sync: false
+      - key: WHOP_PLAN_QUICK
+        sync: false

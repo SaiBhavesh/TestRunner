@@ -4,6 +4,7 @@ import os
 for name in ("MOCK_SOLARI", "MOCK_EXA", "MOCK_GEMINI", "MOCK_TERAC", "MOCK_WHOP"):
     os.environ[name] = "1"
 os.environ["WORKER_ENABLED"] = "0"
+os.environ["HUMAN_TEST_ENABLED"] = "1"  # hidden on the live site, but its flow is still tested
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

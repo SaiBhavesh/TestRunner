@@ -20,12 +20,15 @@
       <span class="tier-name">Quick Check <b>${{ "%g"|format(config.PRICE_QUICK) }}</b></span>
       <span class="muted">Desktop + mobile screenshots, console errors, broken links, load time, ranked fixes.</span>
     </label>
+    {% if config.HUMAN_TEST_ENABLED %}
     <label class="tier">
       <input type="radio" name="tier" value="human">
       <span class="tier-name">Human Test <b>${{ "%g"|format(config.PRICE_HUMAN) }}</b></span>
       <span class="muted">Everything in Quick Check, plus {{ config.TERAC_PARTICIPANTS }} real people try a task and tell you what went wrong.</span>
     </label>
+    {% endif %}
   </div>
+  {% if not config.HUMAN_TEST_ENABLED %}<p class="muted">Human Test with real testers coming soon.</p>{% endif %}
 
   <label id="task-field" hidden>Task for testers <input name="task" maxlength="200" placeholder="Can a user sign up?"></label>
   <label>Email (optional) <input name="email" type="email" placeholder="you@example.com"></label>

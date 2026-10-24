@@ -33,6 +33,12 @@ WHOP_WEBHOOK_SECRET = os.environ.get("WHOP_WEBHOOK_SECRET", "")
 WHOP_BUSINESS_ID = os.environ.get("WHOP_BUSINESS_ID", "")
 WHOP_PRODUCT_QUICK = os.environ.get("WHOP_PRODUCT_QUICK", "")
 WHOP_PRODUCT_HUMAN = os.environ.get("WHOP_PRODUCT_HUMAN", "")
+# Not in the spec's list: the Whop plan (plan_...) a Quick Check checkout is created from (verified M4).
+WHOP_PLAN_QUICK = os.environ.get("WHOP_PLAN_QUICK", "")
+# Sandbox: https://sandbox-api.whop.com/api/v1
+WHOP_API_BASE = os.environ.get("WHOP_API_BASE", "https://api.whop.com/api/v1").rstrip("/")
+# Human Test is hidden while Terac costs more per tester than the tier's price.
+HUMAN_TEST_ENABLED = os.environ.get("HUMAN_TEST_ENABLED", "0").strip() == "1"
 
 # On Render, RENDER_EXTERNAL_URL is the service's public onrender.com URL (set by Render automatically).
 BASE_URL = (os.environ.get("BASE_URL") or os.environ.get("RENDER_EXTERNAL_URL") or "http://localhost:8000").rstrip("/")

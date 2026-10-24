@@ -8,7 +8,7 @@
   <p class="status status-{{ order.status }}">Status: <b>{{ order.status.replace("_", " ") }}</b></p>
 
   {% if order.status == "created" %}
-    <p>Waiting for payment confirmation from Whop.</p>
+    <p>Waiting for payment confirmation from Whop. This page refreshes every 5 seconds.</p>
     {% if config.MOCK_WHOP %}
       <p class="mock-note">Mock mode: simulate payment by running<br><code>python scripts/fake_webhook.py {{ order.id }}</code></p>
     {% endif %}

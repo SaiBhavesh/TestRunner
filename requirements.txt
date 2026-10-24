@@ -8,3 +8,4 @@ pytest==9.1.1
 solari-browser==0.2.3
 google-genai==2.33.0
 exa-py==2.26.0
+whop-sdk==2.6.0
