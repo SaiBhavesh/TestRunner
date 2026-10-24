@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Find out what's broken on your website.</h1>
+  <p class="lead">An AI agent opens your site in a real browser, and real people try to use it. You get a ranked list of fixes.</p>
+</section>
+
+<section class="steps">
+  <div><b>1.</b> Enter your URL and pick a test.</div>
+  <div><b>2.</b> Pay securely with Whop.</div>
+  <div><b>3.</b> Get your report, in minutes for a Quick Check.</div>
+</section>
+
+<form id="order-form" class="card">
+  <label>Website URL <input name="url" type="url" required placeholder="https://example.com"></label>
+
+  <div class="tiers">
+    <label class="tier">
+      <input type="radio" name="tier" value="quick" checked>
+      <span class="tier-name">Quick Check <b>${{ "%g"|format(config.PRICE_QUICK) }}</b></span>
+      <span class="muted">Desktop + mobile screenshots, console errors, broken links, load time, ranked fixes.</span>
+    </label>
+    <label class="tier">
+      <input type="radio" name="tier" value="human">
+      <span class="tier-name">Human Test <b>${{ "%g"|format(config.PRICE_HUMAN) }}</b></span>
+      <span class="muted">Everything in Quick Check, plus {{ config.TERAC_PARTICIPANTS }} real people try a task and tell you what went wrong.</span>
+    </label>
+  </div>
+
+  <label id="task-field" hidden>Task for testers <input name="task" maxlength="200" placeholder="Can a user sign up?"></label>
+  <label>Email (optional) <input name="email" type="email" placeholder="you@example.com"></label>
+  <p id="form-error" class="error" hidden></p>
+  <button type="submit">Buy</button>
+</form>
+{% endblock %}

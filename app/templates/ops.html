@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}TestRunner Ops{% endblock %}
+{% block head %}<meta http-equiv="refresh" content="10">{% endblock %}
+{% block content %}
+<h1>Operations</h1>
+<div class="stats">
+  <div><b>${{ "%.2f"|format(revenue) }}</b><span>revenue</span></div>
+  <div><b>${{ "%.2f"|format(spent) }} / ${{ "%.0f"|format(config.TERAC_BUDGET_TOTAL) }}</b><span>Terac spend vs budget</span></div>
+  <div><b>{{ orders|length }}</b><span>orders</span></div>
+</div>
+
+<h2>Orders</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>#</th><th>Tier</th><th>Status</th><th>Whop payment</th><th>Solari inspection</th><th>Terac study</th><th>Agent analysis</th><th>Report</th></tr></thead>
+  <tbody>
+  {% for o in orders %}
+  <tr>
+    <td>{{ o.num }}</td>
+    <td>{{ config.TIER_NAMES[o.tier] }}</td>
+    <td>{{ o.status.replace("_", " ") }}{% if o.fail_reason %}<br><span class="error">{{ o.fail_reason }}</span>{% endif %}</td>
+    <td>{% if o.paid_at %}paid · …{{ o.payment_tail }} · ${{ "%.2f"|format(o.amount_usd) }}{% else %}unpaid{% endif %}</td>
+    <td>{% if o.shot %}<img class="thumb" src="{{ o.shot }}" alt="screenshot"> {{ o.errors }} issues{% else %}–{% endif %}</td>
+    <td>{% if o.study_id %}{{ o.study_id }} · {{ o.responses }}/{{ o.target }}{% elif o.tier == "human" %}not launched{% else %}n/a{% endif %}</td>
+    <td>{% if o.prompt_version %}prompt v{{ o.prompt_version }}{% else %}–{% endif %}</td>
+    <td>{{ o.delivered_at or "–" }}</td>
+  </tr>
+  {% else %}<tr><td colspan="8">No orders yet.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+
+<h2>Decision log</h2>
+<ul class="log">
+  {% for e in events %}
+  <li class="ev-{{ e.type }}"><span class="muted">{{ e.created_at }}</span> {% if e.num %}#{{ e.num }}{% endif %} <b>{{ e.type }}</b> {{ e.message }}</li>
+  {% else %}<li>No events yet.</li>{% endfor %}
+</ul>
+
+<h2>Self-improvement (before / after)</h2>
+<div class="card">
+  <p class="muted">The prompt v1 vs v2 tester comparison runs in Milestone 7. Prompt versions so far:</p>
+  <ul>{% for p in prompts %}<li>v{{ p.version }} by {{ p.created_by }}{% if p.active %} (active){% endif %}: {{ p.reason }}</li>{% endfor %}</ul>
+</div>
+{% endblock %}

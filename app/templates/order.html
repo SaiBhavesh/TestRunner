@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% set final = order.status in ("report_ready", "failed") %}
+{% block head %}{% if not final %}<meta http-equiv="refresh" content="5">{% endif %}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Your order</h1>
+  <p class="muted">{{ config.TIER_NAMES[order.tier] }} for {{ order.url }}</p>
+  <p class="status status-{{ order.status }}">Status: <b>{{ order.status.replace("_", " ") }}</b></p>
+
+  {% if order.status == "created" %}
+    <p>Waiting for payment confirmation from Whop.</p>
+    {% if config.MOCK_WHOP %}
+      <p class="mock-note">Mock mode: simulate payment by running<br><code>python scripts/fake_webhook.py {{ order.id }}</code></p>
+    {% endif %}
+  {% elif order.status in ("study_launched", "collecting") %}
+    <p>Real testers are working on your site. This page refreshes every 5 seconds.</p>
+    {% if config.MOCK_TERAC %}
+      <p class="mock-note">Mock mode: the tester form is <a href="/t/{{ order.study_token }}" target="_blank" rel="noopener">here</a>.
+        Submit it {{ config.TERAC_PARTICIPANTS }} times, or run<br>
+        <code>python scripts/fake_responses.py --token={{ order.study_token }} --base-url {{ config.BASE_URL }}</code></p>
+    {% endif %}
+  {% elif order.status == "report_ready" %}
+    <p><a class="button" href="/report/{{ order.id }}?t={{ order.report_token }}">Open your report</a></p>
+  {% elif order.status == "failed" %}
+    <p class="error">Something went wrong: {{ order.fail_reason }}</p>
+  {% else %}
+    <p>The agent is working. This page refreshes every 5 seconds.</p>
+  {% endif %}
+</section>
+{% endblock %}

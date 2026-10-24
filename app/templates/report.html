@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Report: {{ order.url }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Website report</h1>
+  <p class="muted">{{ order.url }} · {{ config.TIER_NAMES[order.tier] }} · delivered {{ order.delivered_at }}</p>
+  {% for note in report.notes %}<p class="mock-note">{{ note }}</p>{% endfor %}
+  {% if report.score_0_100 is not none %}<p class="score">{{ report.score_0_100 }}<span>/100</span></p>{% endif %}
+  <p>{{ report.summary }}</p>
+</section>
+
+<section class="card">
+  <h2>Top fixes</h2>
+  <ol>{% for fix in report.top_fixes %}<li>{{ fix }}</li>{% endfor %}</ol>
+</section>
+
+{% if report.human_results %}{% set h = report.human_results %}
+<section class="card">
+  <h2>What real testers found</h2>
+  <p class="muted">Task: {{ h.task }}</p>
+  <div class="stats">
+    <div><b>{{ h.participants }}</b><span>testers</span></div>
+    <div><b>{{ (h.completion_rate * 100)|round|int }}%</b><span>completed the task</span></div>
+    <div><b>{{ h.avg_rating }}</b><span>avg ease (1–10)</span></div>
+  </div>
+  {% if h.recurring_problems %}
+  <h3>Recurring problems</h3>
+  <ul>{% for p in h.recurring_problems %}
+    <li><b>{{ p.problem }}</b> ({{ p.count }} of {{ h.participants }} testers)<br>
+      <span class="quote">"{{ p.example_comment }}"</span></li>
+  {% endfor %}</ul>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>Findings</h2>
+  {% for f in report.findings %}
+  <div class="finding sev-{{ f.severity }}">
+    <p><span class="pill">{{ f.severity }}</span> <b>{{ f.title }}</b></p>
+    <p>{{ f.evidence }} <span class="muted">({{ f.source }})</span></p>
+    <p>Fix: {{ f.fix }}</p>
+  </div>
+  {% else %}<p>No problems found in the scan.</p>{% endfor %}
+</section>
+
+<section class="card">
+  <h2>Screenshots</h2>
+  <div class="shots">
+    {% if scan.screenshots.desktop %}<figure><img src="/{{ scan.screenshots.desktop }}" alt="Desktop screenshot"><figcaption>Desktop 1366×768</figcaption></figure>{% endif %}
+    {% if scan.screenshots.mobile %}<figure class="shot-mobile"><img src="/{{ scan.screenshots.mobile }}" alt="Mobile screenshot"><figcaption>Mobile 390×844</figcaption></figure>{% endif %}
+  </div>
+  <p class="muted">Load time: {{ scan.load_time_ms if scan.load_time_ms is not none else "unknown" }} ms · HTTP {{ scan.http_status }}</p>
+  {% for n in scan.notes %}<p class="muted">{{ n }}</p>{% endfor %}
+</section>
+
+{% if scan.accessibility %}
+<section class="card">
+  <h2>Accessibility (axe-core)</h2>
+  {% if scan.accessibility.violations %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>Impact</th><th>Rule</th><th>Elements</th><th>Example</th></tr></thead>
+    <tbody>{% for v in scan.accessibility.violations %}
+      <tr><td>{{ v.impact }}</td><td><a href="{{ v.help_url }}" target="_blank" rel="noopener">{{ v.help }}</a></td>
+          <td>{{ v.nodes }}</td><td><code>{{ v.example_target }}</code></td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<p>No automated accessibility violations found. Automated checks catch only part of accessibility issues.</p>{% endif %}
+</section>
+{% endif %}
+
+{% if scan.seo and scan.seo.checks %}
+<section class="card">
+  <h2>SEO basics</h2>
+  <ul class="checks">{% for c in scan.seo.checks %}
+    <li class="{{ 'ok' if c.ok else 'bad' }}">{{ "✓" if c.ok else "✗" }} <b>{{ c.check }}</b> <span class="muted">{{ c.detail }}</span></li>
+  {% endfor %}</ul>
+</section>
+{% endif %}
+
+{% if report.where_your_customers_are %}
+<section class="card">
+  <h2>Where your customers are</h2>
+  <p class="muted">Recent discussions related to what your site offers, found by Exa.</p>
+  <ul>{% for t in report.where_your_customers_are %}
+    <li><a href="{{ t.url }}" target="_blank" rel="noopener">{{ t.title }}</a>{% if t.published_date %} <span class="muted">({{ t.published_date }})</span>{% endif %}
+      {% if t.why_relevant %}<br><span class="quote">"{{ t.why_relevant }}"</span>{% endif %}</li>
+  {% endfor %}</ul>
+</section>
+{% endif %}
+
+{% if report.similar_products %}
+<section class="card">
+  <h2>Similar products</h2>
+  <p class="muted">Companies with a similar offer, found by Exa. Links go to the company's site or its Exa company profile.</p>
+  <ul>{% for p in report.similar_products %}
+    <li><a href="{{ p.url }}" target="_blank" rel="noopener">{{ p.name }}</a></li>
+  {% endfor %}</ul>
+</section>
+{% endif %}
+{% endblock %}
