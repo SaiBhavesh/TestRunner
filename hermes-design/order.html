@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order a test — TestRunner</title>
+<style>
+  :root{--bg:#f6f7f9;--surface:#fff;--text:#14181f;--muted:#5b6575;--border:#dde1e8;--accent:#2457d6;--accent-ink:#fff;--ok:#127a46;--ok-bg:#e3f4ea;--warn:#8a5a00;--warn-bg:#fdf0d5;--bad:#b3261e;--bad-bg:#fbe5e3;--info-bg:#e6edfb;--radius:10px}
+  @media (prefers-color-scheme:dark){:root{--bg:#0f1318;--surface:#171c23;--text:#e8ebf0;--muted:#98a2b3;--border:#2a323d;--accent:#6b93ff;--accent-ink:#0b1020;--ok:#5fd38d;--ok-bg:#12301f;--warn:#f0b955;--warn-bg:#3a2c0e;--bad:#ff8a80;--bad-bg:#3d1714;--info-bg:#1a2745}}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:var(--accent)}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  header.site{background:var(--surface);border-bottom:1px solid var(--border)}
+  header.site .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;flex-wrap:wrap}
+  .brand{font-weight:700;text-decoration:none;color:var(--text)}
+  nav a{margin-left:16px;text-decoration:none;color:var(--muted);font-size:.95rem}
+  nav a:hover,nav a[aria-current]{color:var(--text)}
+  .banner{background:var(--warn-bg);color:var(--warn);padding:8px 0;font-size:.9rem}
+  main{padding:28px 0 48px}
+  h1{margin:0 0 4px;font-size:1.7rem}
+  h2{margin:0 0 12px;font-size:1.15rem}
+  .lead{color:var(--muted);margin:0 0 24px}
+  .layout{display:grid;gap:20px;grid-template-columns:1fr}
+  @media (min-width:820px){.layout{grid-template-columns:1fr 1fr;align-items:start}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+  label{display:block;font-weight:600;margin:14px 0 4px}
+  label:first-of-type{margin-top:0}
+  input,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
+  textarea{min-height:90px;resize:vertical}
+  input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--bad)}
+  .hint{color:var(--muted);font-size:.85rem;margin:4px 0 0}
+  .error{color:var(--bad);font-size:.85rem;margin:4px 0 0;min-height:0}
+  .btn{display:inline-block;padding:10px 18px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;text-decoration:none;cursor:pointer}
+  .btn.secondary{background:transparent;color:var(--accent)}
+  .btn[aria-disabled="true"],.btn:disabled{opacity:.5;cursor:not-allowed}
+  .form-actions{margin-top:20px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:600;background:var(--info-bg);color:var(--accent)}
+  .pill.ok{background:var(--ok-bg);color:var(--ok)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn)}
+  ol.timeline{list-style:none;margin:16px 0;padding:0}
+  ol.timeline li{display:flex;gap:10px;align-items:center;padding:6px 0;color:var(--muted)}
+  ol.timeline .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);flex:none}
+  ol.timeline li.done{color:var(--text)}
+  ol.timeline li.done .dot{background:var(--ok);border-color:var(--ok)}
+  ol.timeline li.current{color:var(--text);font-weight:600}
+  ol.timeline li.current .dot{border-color:var(--accent);background:var(--info-bg)}
+  dl.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:12px 0}
+  dl.kv dt{color:var(--muted)}
+  dl.kv dd{margin:0;overflow-wrap:anywhere}
+  .notice{padding:10px 12px;border-radius:8px;background:var(--info-bg);margin:12px 0;font-size:.95rem}
+  .notice.warn{background:var(--warn-bg);color:var(--warn)}
+  .lookup{display:flex;gap:8px;margin-bottom:12px}
+  .lookup input{flex:1}
+  .empty{color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">TestRunner</a>
+    <nav aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="order.html" aria-current="page">Order a test</a>
+      <a href="report.html">View a report</a>
+      <a href="brief.html">Tester brief</a>
+      <a href="console.html">Operator</a>
+      <a href="proof.html">Proof</a>
+    </nav>
+  </div>
+</header>
+<div class="banner" id="demoBanner" hidden><div class="wrap">Demo data. New orders are saved in this browser only.</div></div>
+
+<main class="wrap">
+  <h1>Order a test</h1>
+  <p class="lead">Describe what you want checked. You will see a price before you pay anything.</p>
+
+  <div class="layout">
+    <section class="card" aria-labelledby="formH">
+      <h2 id="formH">New order</h2>
+      <form id="orderForm" novalidate>
+        <label for="sponsor">Business or product name</label>
+        <input id="sponsor" name="sponsor" maxlength="80" autocomplete="organization" required>
+        <p class="error" id="sponsorErr" role="alert"></p>
+
+        <label for="email">Contact email</label>
+        <input id="email" name="email" type="email" maxlength="120" autocomplete="email" required>
+        <p class="error" id="emailErr" role="alert"></p>
+
+        <label for="url">Page to test</label>
+        <input id="url" name="url" type="url" placeholder="https://" maxlength="300" required>
+        <p class="error" id="urlErr" role="alert"></p>
+
+        <label for="goals">What should testers try?</label>
+        <textarea id="goals" name="goals" maxlength="600" required></textarea>
+        <p class="hint">Example: “Sign up and create your first note.” At least 15 characters.</p>
+        <p class="error" id="goalsErr" role="alert"></p>
+
+        <label for="testers">Number of testers (1 to 20)</label>
+        <input id="testers" name="testers" type="number" min="1" max="20" value="5" required>
+        <p class="error" id="testersErr" role="alert"></p>
+
+        <div class="form-actions"><button class="btn" type="submit">Submit order</button></div>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="statusH" aria-live="polite">
+      <h2 id="statusH">Order status</h2>
+      <form class="lookup" id="lookupForm">
+        <label class="sr" for="lookupId" style="position:absolute;left:-9999px">Order number</label>
+        <input id="lookupId" placeholder="Order number, e.g. TR-1002" autocomplete="off">
+        <button class="btn secondary" type="submit">Look up</button>
+      </form>
+      <div id="statusBody"><p class="empty">Submit an order or look one up to see its progress.</p></div>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const LS_KEY = 'testrunner.orders.v1';
+  const STAGES = [
+    ['submitted', 'Order received'],
+    ['preflight', 'Page screened'],
+    ['quote_pending', 'Waiting for a quote'],
+    ['quoted', 'Quote ready'],
+    ['paid', 'Payment confirmed'],
+    ['testing', 'Testers working'],
+    ['review', 'Reviewing results'],
+    ['complete', 'Report ready']
+  ];
+
+  const $ = (id) => document.getElementById(id);
+
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    }
+    for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    return el;
+  }
+
+  const money = (n, c) => new Intl.NumberFormat(undefined, { style: 'currency', currency: c || 'USD' }).format(n);
+  const isHttpUrl = (s) => { try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } };
+  // Only send sponsors to a Whop-hosted checkout.
+  const isWhopUrl = (s) => { try { const u = new URL(s); return u.protocol === 'https:' && (u.hostname === 'whop.com' || u.hostname.endsWith('.whop.com')); } catch { return false; } };
+
+  function readLocal() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
+  }
+  function writeLocal(list) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(list)); return true; } catch { return false; }
+  }
+
+  async function loadData() {
+    let base = { meta: {}, whop: {}, orders: [] };
+    try {
+      const res = await fetch('status.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      base = await res.json();
+    } catch (err) {
+      console.warn('status.json unavailable:', err.message);
+    }
+    const known = new Set((base.orders || []).map(o => o.id));
+    return { ...base, orders: (base.orders || []).concat(readLocal().filter(o => !known.has(o.id))) };
+  }
+
+  /* ---------- form ---------- */
+  function validate(f) {
+    const errors = {};
+    if (f.sponsor.trim().length < 2) errors.sponsor = 'Enter your business or product name.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) errors.email = 'Enter a valid email address.';
+    if (!isHttpUrl(f.url.trim())) errors.url = 'Enter a full link starting with http:// or https://.';
+    if (f.goals.trim().length < 15) errors.goals = 'Describe the task in at least 15 characters.';
+    const n = Number(f.testers);
+    if (!Number.isInteger(n) || n < 1 || n > 20) errors.testers = 'Choose a whole number from 1 to 20.';
+    return errors;
+  }
+
+  function showErrors(errors) {
+    for (const key of ['sponsor', 'email', 'url', 'goals', 'testers']) {
+      $(key + 'Err').textContent = errors[key] || '';
+      $(key).setAttribute('aria-invalid', errors[key] ? 'true' : 'false');
+    }
+    const first = Object.keys(errors)[0];
+    if (first) $(first).focus();
+  }
+
+  function newOrderId() {
+    return 'TR-L' + Date.now().toString(36).toUpperCase().slice(-6);
+  }
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    const f = {
+      sponsor: $('sponsor').value, email: $('email').value, url: $('url').value,
+      goals: $('goals').value, testers: $('testers').value
+    };
+    const errors = validate(f);
+    showErrors(errors);
+    if (Object.keys(errors).length) return;
+
+    const order = {
+      id: newOrderId(),
+      createdAt: new Date().toISOString(),
+      source: 'local',
+      sponsor: f.sponsor.trim(), email: f.email.trim(), url: f.url.trim(),
+      goals: f.goals.trim(), testers: Number(f.testers),
+      stage: 'submitted',
+      quote: { status: 'not_requested', amount: null, currency: 'USD' },
+      payment: { status: 'unpaid', whopPaymentId: null, paidAt: null },
+      preflight: { status: 'pending', checkedAt: null, notes: [] },
+      terac: { opportunityId: null, status: 'not_started' },
+      submissions: [], report: null
+    };
+    const list = readLocal();
+    list.push(order);
+    if (!writeLocal(list)) {
+      $('statusBody').replaceChildren(h('div', { class: 'notice warn', text: 'Could not save the order in this browser. Check that storage is allowed and try again.' }));
+      return;
+    }
+    $('orderForm').reset();
+    $('testers').value = 5;
+    setOrderParam(order.id);
+    await renderStatus(order.id);
+  }
+
+  /* ---------- status ---------- */
+  function setOrderParam(id) {
+    const url = new URL(location.href);
+    url.searchParams.set('order', id);
+    url.searchParams.delete('paid');
+    history.replaceState(null, '', url);
+  }
+
+  function timeline(stage) {
+    const idx = Math.max(0, STAGES.findIndex(s => s[0] === stage));
+    return h('ol', { class: 'timeline' }, STAGES.map(([key, label], i) =>
+      h('li', { class: i < idx || stage === 'complete' ? 'done' : i === idx ? 'current' : '', 'aria-current': i === idx && stage !== 'complete' ? 'step' : null },
+        h('span', { class: 'dot', 'aria-hidden': 'true' }), label)));
+  }
+
+  function paymentBlock(order, whop) {
+    const returned = new URLSearchParams(location.search).get('paid') === '1';
+    if (order.payment && order.payment.status === 'paid') {
+      return h('div', { class: 'notice' }, 'Payment confirmed' + (order.payment.paidAt ? ' on ' + new Date(order.payment.paidAt).toLocaleDateString() : '') + '.');
+    }
+    if (order.stage !== 'quoted') return null;
+
+    const amount = order.quote && order.quote.amount;
+    const box = h('div', {}, h('p', {}, 'Your quote: ', h('strong', { text: money(amount, order.quote.currency) })));
+    if (returned) {
+      box.append(h('div', { class: 'notice' }, 'Thanks. We are confirming your payment with the payment provider. This page updates once it is confirmed; the link you came back from does not count as proof.'));
+    }
+    // Use a checkout made for this order, or the standard link only when its price equals the quote.
+    // Never send a sponsor to a checkout that charges a different amount than the quote shown.
+    let payUrl = null;
+    if (isWhopUrl(order.checkoutUrl)) payUrl = order.checkoutUrl;
+    else if (whop && isWhopUrl(whop.checkoutUrl) && typeof whop.starterPrice === 'number' && whop.starterPrice === amount) payUrl = whop.checkoutUrl;
+    if (payUrl) {
+      box.append(h('a', { class: 'btn', href: payUrl, rel: 'noopener' }, 'Pay securely'));
+    } else {
+      box.append(h('span', { class: 'btn', 'aria-disabled': 'true', role: 'link' }, 'Pay securely'),
+        h('p', { class: 'hint', text: 'The checkout link for this quote is not published yet. The operator creates it after approving the price.' }));
+    }
+    return box;
+  }
+
+  async function renderStatus(id) {
+    const body = $('statusBody');
+    const data = await loadData();
+    if (data.meta && data.meta.mode === 'demo') $('demoBanner').hidden = false;
+    const order = data.orders.find(o => o.id.toLowerCase() === String(id).trim().toLowerCase());
+    if (!order) {
+      body.replaceChildren(h('div', { class: 'notice warn', text: 'No order found with that number. Check it and try again.' }));
+      return;
+    }
+    const stageLabel = (STAGES.find(s => s[0] === order.stage) || [, order.stage])[1];
+    const kids = [
+      h('p', {}, h('strong', { text: order.id }), ' ', h('span', { class: 'pill' + (order.stage === 'complete' ? ' ok' : order.stage === 'quote_pending' ? ' warn' : ''), text: stageLabel })),
+      timeline(order.stage),
+      h('dl', { class: 'kv' },
+        h('dt', { text: 'Business' }), h('dd', { text: order.sponsor }),
+        h('dt', { text: 'Page' }), h('dd', {}, isHttpUrl(order.url) ? h('a', { href: order.url, rel: 'noopener noreferrer', target: '_blank', text: order.url }) : order.url),
+        h('dt', { text: 'Task' }), h('dd', { text: order.goals }),
+        h('dt', { text: 'Testers' }), h('dd', { text: String(order.testers) }))
+    ];
+    if (order.stage === 'quote_pending') {
+      kids.push(h('div', { class: 'notice' }, 'A person is pricing your study. This usually takes about an hour. Come back to this page with your order number.'));
+    }
+    const pay = paymentBlock(order, data.whop);
+    if (pay) kids.push(pay);
+    if (order.stage === 'complete') {
+      kids.push(h('a', { class: 'btn', href: 'report.html?order=' + encodeURIComponent(order.id) }, 'Open report'));
+    }
+    body.replaceChildren(...kids);
+  }
+
+  function init() {
+    $('orderForm').addEventListener('submit', onSubmit);
+    $('lookupForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = $('lookupId').value.trim();
+      if (!id) return;
+      setOrderParam(id);
+      renderStatus(id);
+    });
+    const id = new URLSearchParams(location.search).get('order');
+    if (id) { $('lookupId').value = id; renderStatus(id); } else { loadData().then(d => { if (d.meta && d.meta.mode === 'demo') $('demoBanner').hidden = false; }); }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Website test{% endblock %}
+{% block content %}
+<section class="card">
+  {% if completion_code %}
+    <h1>Thank you!</h1>
+    <p>Your answers were saved. Your completion code is:</p>
+    <p class="code">{{ completion_code }}</p>
+  {% elif not open %}
+    <h1>This study is closed</h1>
+    <p>It is no longer accepting responses. Thank you for your interest.</p>
+  {% else %}
+    <h1>Test a website</h1>
+    <ol>
+      <li>Open the website: <a href="{{ order.url }}" target="_blank" rel="noopener">{{ order.url }}</a> (opens in a new tab)</li>
+      <li>Try to do this task: <b>{{ order.task }}</b></li>
+      <li>Come back here and answer the questions below.</li>
+    </ol>
+
+
+    {% if errors %}<ul class="error">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+
+
+    <form method="post">
+      <input type="hidden" name="participant_id" value="{{ participant_id }}">
+      <fieldset>
+        <legend>Did you complete the task?</legend>
+        <label class="inline"><input type="radio" name="completed" value="yes" required {% if form.completed == "yes" %}checked{% endif %}> Yes</label>
+        <label class="inline"><input type="radio" name="completed" value="no" {% if form.completed == "no" %}checked{% endif %}> No</label>
+      </fieldset>
+      <label>How easy was it? (1 = very hard, 10 = very easy)
+        <select name="rating" required>
+          <option value="">Choose…</option>
+          {% for i in range(1, 11) %}<option value="{{ i }}" {% if form.rating == i|string %}selected{% endif %}>{{ i }}</option>{% endfor %}
+        </select>
+      </label>
+      <label>What was confusing? <textarea name="confusing" required minlength="15" rows="3">{{ form.confusing or "" }}</textarea></label>
+      <label>Did anything look broken? <textarea name="broken" required minlength="15" rows="3">{{ form.broken or "" }}</textarea></label>
+      <label>Any other comments? (optional) <textarea name="comments" rows="2">{{ form.comments or "" }}</textarea></label>
+      <button type="submit">Submit</button>
+    </form>
+  {% endif %}
+</section>
+{% endblock %}

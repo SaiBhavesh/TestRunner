@@ -1,11 +1,22 @@
 # TestRunner
 
-An agent-run company that tests websites. Solari does the browser work, Terac supplies real human testers,
-Gemini writes the analysis, Whop collects the money. Full spec: [TESTRUNNER_SPEC.md](TESTRUNNER_SPEC.md).
+**Before your million-dollar app launches, make sure it actually works.**
 
-**Status: Milestone 4 (Quick Check only) + deploy.** Solari (browser scan + axe-core accessibility + basic SEO),
-Gemini, Exa and Whop are real (`MOCK_*=0` with keys set). Terac is still a mock. Only Quick Check ($5) is for sale:
-Human Test is hidden (`HUMAN_TEST_ENABLED=0`) because Terac's confirmed price is $30 per tester.
+TestRunner is a website testing company run by an AI agent, built at the **Zero Human Company Hackathon NYC** (Terac x Whop, October 24, 2026). A startup pastes its website link and pays through Whop. The agent then opens the site in a Solari cloud browser on desktop and phone, collects JavaScript errors, broken links, load time, accessibility issues (axe-core) and SEO basics, uses Exa to find similar products and online discussions where the startup's customers are, and has Gemini write a ranked, evidence-backed fix list. Terac supplies real human testers for the deeper Human Test tier.
+
+Full build spec: [TESTRUNNER_SPEC.md](TESTRUNNER_SPEC.md). The multi-agent ("Hermes") design and demo pages from the same hackathon team are in [`hermes-design/`](hermes-design).
+
+## Status
+
+| Part | Status |
+|---|---|
+| Solari browser scan, axe-core, SEO checks | Real. Run on live websites (python.org, terac.com, plausible.io). |
+| Gemini report | Real. Every finding cites scan evidence, with timeouts and a fallback model. |
+| Exa research | Real. Recent threads and similar products for each site. |
+| Whop checkout and webhook | Built from Whop's docs and covered by tests. Not yet tested with a live payment. |
+| Terac human testing | Mock. The tester form and study flow work end to end with fake responses. Terac quoted about $30 per tester, so the Human Test tier is hidden (`HUMAN_TEST_ENABLED=0`). |
+
+Only Quick Check ($5) is for sale.
 
 Run only one server against a database at a time: each server has a worker, and two workers on the same
 `testrunner.db` will both process the same order.
@@ -25,7 +36,7 @@ Copy `.env.example` to `.env` only when you need to change settings; the default
 
 ## M1 acceptance check
 
-**Automated:** `.\.venv\Scripts\python.exe -m pytest`. Done means `16 passed`.
+**Automated:** `.\.venv\Scripts\python.exe -m pytest`. Done means `44 passed`.
 
 **By hand**, with the server running (open a second terminal in the project folder for the scripts):
 

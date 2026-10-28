@@ -1,0 +1,357 @@
+{
+  "meta": {
+    "mode": "demo",
+    "service": "TestRunner",
+    "updatedAt": "2026-10-24T21:52:30Z",
+    "note": "Demo data. In production an agent (Claude Code with the Terac, Solari and Whop MCPs) rewrites this file."
+  },
+  "whop": {
+    "businessId": "biz_3iQC77seXxsSLC",
+    "productId": "prod_f58b8I7Nc9zsH",
+    "checkoutUrl": "https://whop.com/checkout/ch_f4qEmGFq6igx5se/",
+    "currency": "USD",
+    "planId": "plan_3PoaN0Sn2xIQB",
+    "checkoutConfigId": "ch_f4qEmGFq6igx5se",
+    "starterPrice": 20
+  },
+  "mcpCalls": [
+    {
+      "at": "2026-10-24T21:30:10Z",
+      "service": "terac",
+      "tool": "terac_get_context",
+      "orderId": null,
+      "resultId": "oy0kqsuzylfvsuj5sctrmo7u",
+      "bot": "manager-bot"
+    },
+    {
+      "at": "2026-10-24T21:30:12Z",
+      "service": "terac",
+      "tool": "terac_list_feasibility_requests",
+      "orderId": null,
+      "resultId": null,
+      "bot": "manager-bot"
+    },
+    {
+      "at": "2026-10-24T21:32:05Z",
+      "service": "terac",
+      "tool": "terac_request_feasibility",
+      "orderId": "TR-1004",
+      "resultId": "kfyckca09w485ov27089q9dj",
+      "bot": "manager-bot"
+    },
+    {
+      "at": "2026-10-24T21:32:20Z",
+      "service": "terac",
+      "tool": "terac_get_feasibility_request",
+      "orderId": "TR-1004",
+      "resultId": "kfyckca09w485ov27089q9dj",
+      "bot": "manager-bot"
+    },
+    {
+      "at": "2026-10-24T21:38:00Z",
+      "service": "solari",
+      "tool": "solari_sandbox_create",
+      "orderId": null,
+      "resultId": "AnvnaOmNeNAH",
+      "bot": "manager-bot"
+    },
+    {
+      "at": "2026-10-24T21:39:30Z",
+      "service": "solari",
+      "tool": "solari_exec",
+      "orderId": null,
+      "resultId": "AnvnaOmNeNAH",
+      "bot": "manager-bot"
+    },
+    {
+      "at": "2026-10-24T21:40:10Z",
+      "service": "solari",
+      "tool": "solari_write_file",
+      "orderId": null,
+      "resultId": "AnvnaOmNeNAH:proof.html",
+      "bot": "manager-bot"
+    },
+    {
+      "at": "2026-10-24T21:49:10Z",
+      "service": "solari",
+      "tool": "solari_kill",
+      "orderId": null,
+      "resultId": "AnvnaOmNeNAH",
+      "bot": "manager-bot"
+    },
+    {
+      "at": "2026-10-24T21:50:40Z",
+      "service": "solari",
+      "tool": "solari_connect",
+      "orderId": null,
+      "resultId": "desktop-box",
+      "bot": "manager-bot"
+    },
+    {
+      "at": "2026-10-24T21:52:30Z",
+      "service": "solari",
+      "tool": "solari_write_file",
+      "orderId": null,
+      "resultId": "desktop-box:proof.html",
+      "bot": "manager-bot"
+    }
+  ],
+  "orders": [
+    {
+      "id": "TR-1001",
+      "createdAt": "2026-10-22T15:04:00Z",
+      "sponsor": "Acme Notes",
+      "email": "founder@acme-notes.example",
+      "url": "https://example.com/",
+      "goals": "Can a new visitor sign up and create a first note without help?",
+      "testers": 5,
+      "stage": "complete",
+      "quote": {
+        "status": "accepted",
+        "amount": 250,
+        "currency": "USD"
+      },
+      "payment": {
+        "status": "paid",
+        "whopPaymentId": "pay_demo_1001",
+        "paidAt": "2026-10-22T18:30:00Z"
+      },
+      "preflight": {
+        "status": "passed",
+        "checkedAt": "2026-10-22T15:10:00Z",
+        "notes": [
+          "Page loads in under 3 seconds",
+          "No login wall before the signup form",
+          "No console errors on first load"
+        ]
+      },
+      "terac": {
+        "opportunityId": "opp_demo_1001",
+        "status": "closed"
+      },
+      "submissions": [
+        {
+          "id": "s1",
+          "tester": "Tester A",
+          "rating": 4,
+          "completed": true,
+          "status": "approved",
+          "reward": 40,
+          "feedback": "Signup was quick. I could not find where to change my password afterwards."
+        },
+        {
+          "id": "s2",
+          "tester": "Tester B",
+          "rating": 3,
+          "completed": true,
+          "status": "approved",
+          "reward": 40,
+          "feedback": "The confirm-email step was unclear; I waited a minute before noticing the banner."
+        },
+        {
+          "id": "s3",
+          "tester": "Tester C",
+          "rating": 5,
+          "completed": true,
+          "status": "approved",
+          "reward": 40,
+          "feedback": "Smooth overall. Creating a note took two clicks and the editor felt fast."
+        },
+        {
+          "id": "s4",
+          "tester": "Tester D",
+          "rating": 2,
+          "completed": true,
+          "status": "approved",
+          "reward": 40,
+          "feedback": "On my phone the toolbar covered the text I was typing, which made editing very hard."
+        },
+        {
+          "id": "s5",
+          "tester": "Tester E",
+          "rating": 4,
+          "completed": false,
+          "status": "rejected",
+          "reward": 0,
+          "feedback": "ok"
+        }
+      ],
+      "report": {
+        "summary": "4 of 5 testers completed the task. Signup works, but the confirmation email step and the mobile toolbar caused friction.",
+        "findings": [
+          {
+            "severity": "high",
+            "title": "Mobile toolbar covers the editor",
+            "detail": "Reported on a phone; the fixed toolbar overlaps the text being typed.",
+            "count": 1
+          },
+          {
+            "severity": "medium",
+            "title": "Email confirmation banner is easy to miss",
+            "detail": "A tester waited without noticing the prompt to confirm their email.",
+            "count": 1
+          },
+          {
+            "severity": "low",
+            "title": "Password change is hard to find",
+            "detail": "No obvious link from the account menu.",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "TR-1002",
+      "createdAt": "2026-10-24T13:20:00Z",
+      "sponsor": "Loop Cafe",
+      "email": "hello@loopcafe.example",
+      "url": "https://example.org/",
+      "goals": "Is it obvious how to order ahead for pickup?",
+      "testers": 3,
+      "stage": "quoted",
+      "quote": {
+        "status": "quoted",
+        "amount": 150,
+        "currency": "USD"
+      },
+      "payment": {
+        "status": "unpaid",
+        "whopPaymentId": null,
+        "paidAt": null
+      },
+      "preflight": {
+        "status": "passed",
+        "checkedAt": "2026-10-24T13:28:00Z",
+        "notes": [
+          "Page loads",
+          "Order button visible above the fold"
+        ]
+      },
+      "terac": {
+        "opportunityId": null,
+        "status": "not_started"
+      },
+      "submissions": [],
+      "report": null
+    },
+    {
+      "id": "TR-1003",
+      "createdAt": "2026-10-24T18:45:00Z",
+      "sponsor": "Pixel Pets",
+      "email": "team@pixelpets.example",
+      "url": "https://example.net/",
+      "goals": "Do first-time players understand the tutorial?",
+      "testers": 8,
+      "stage": "quote_pending",
+      "quote": {
+        "status": "awaiting_terac",
+        "amount": null,
+        "currency": "USD"
+      },
+      "payment": {
+        "status": "unpaid",
+        "whopPaymentId": null,
+        "paidAt": null
+      },
+      "preflight": {
+        "status": "passed",
+        "checkedAt": "2026-10-24T18:50:00Z",
+        "notes": [
+          "Page loads",
+          "Game canvas renders"
+        ]
+      },
+      "terac": {
+        "opportunityId": null,
+        "status": "feasibility_requested"
+      },
+      "submissions": [],
+      "report": null
+    },
+    {
+      "id": "TR-1004",
+      "createdAt": "2026-10-24T21:30:00Z",
+      "sponsor": "MillionDollar App (example startup)",
+      "email": "founders@milliondollar.example",
+      "url": "https://example.org/",
+      "goals": "Can a new visitor sign up, use the core feature and find pricing without help? Target: $1M ARR.",
+      "testers": 10,
+      "stage": "quote_pending",
+      "quote": {
+        "status": "awaiting_terac",
+        "amount": null,
+        "currency": "USD"
+      },
+      "payment": {
+        "status": "unpaid",
+        "whopPaymentId": null,
+        "paidAt": null
+      },
+      "preflight": {
+        "status": "pending",
+        "checkedAt": null,
+        "notes": []
+      },
+      "terac": {
+        "opportunityId": null,
+        "status": "feasibility_requested",
+        "feasibilityRequestId": "kfyckca09w485ov27089q9dj",
+        "feasibilityBrief": {
+          "taskDescription": "Usability test of a web app: sign up, use the core feature, and find the pricing page. Participants report where they got stuck or confused.",
+          "panelDescription": "Adults in the United States who buy or use software for work or small business, comfortable on desktop browsers.",
+          "submissionCount": 10,
+          "timelineHours": 72
+        }
+      },
+      "submissions": [],
+      "report": null
+    }
+  ],
+  "activity": [
+    {
+      "at": "2026-10-24T18:50:00Z",
+      "agent": "Solari",
+      "msg": "Pre-flight passed for TR-1003"
+    },
+    {
+      "at": "2026-10-24T18:52:00Z",
+      "agent": "Terac",
+      "msg": "Feasibility requested for TR-1003; waiting for a person to price it"
+    },
+    {
+      "at": "2026-10-24T13:40:00Z",
+      "agent": "Terac",
+      "msg": "Quote of 150 USD received for TR-1002"
+    },
+    {
+      "at": "2026-10-22T18:31:00Z",
+      "agent": "Whop",
+      "msg": "Payment pay_demo_1001 confirmed for TR-1001"
+    },
+    {
+      "at": "2026-10-23T20:00:00Z",
+      "agent": "Report",
+      "msg": "Report written for TR-1001"
+    },
+    {
+      "at": "2026-10-24T21:31:00Z",
+      "agent": "Manager",
+      "msg": "TR-1004 MillionDollar App added as the example order. Terac feasibility brief drafted, not yet sent."
+    },
+    {
+      "at": "2026-10-24T21:32:20Z",
+      "agent": "Research",
+      "msg": "TR-1004 feasibility request sent to Terac (status RECEIVED, no price yet)"
+    },
+    {
+      "at": "2026-10-24T21:40:10Z",
+      "agent": "Manager",
+      "msg": "New Solari sandbox created, files copied, then destroyed at the operator's request"
+    },
+    {
+      "at": "2026-10-24T21:52:30Z",
+      "agent": "Manager",
+      "msg": "Files copied to desktop-box at /home/desktop/app/testrunner"
+    }
+  ]
+}

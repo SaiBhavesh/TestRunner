@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test report — TestRunner</title>
+<style>
+  :root{--bg:#f6f7f9;--surface:#fff;--text:#14181f;--muted:#5b6575;--border:#dde1e8;--accent:#2457d6;--accent-ink:#fff;--ok:#127a46;--ok-bg:#e3f4ea;--warn:#8a5a00;--warn-bg:#fdf0d5;--bad:#b3261e;--bad-bg:#fbe5e3;--info-bg:#e6edfb;--radius:10px}
+  @media (prefers-color-scheme:dark){:root{--bg:#0f1318;--surface:#171c23;--text:#e8ebf0;--muted:#98a2b3;--border:#2a323d;--accent:#6b93ff;--accent-ink:#0b1020;--ok:#5fd38d;--ok-bg:#12301f;--warn:#f0b955;--warn-bg:#3a2c0e;--bad:#ff8a80;--bad-bg:#3d1714;--info-bg:#1a2745}}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:var(--accent)}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  header.site{background:var(--surface);border-bottom:1px solid var(--border)}
+  header.site .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;flex-wrap:wrap}
+  .brand{font-weight:700;text-decoration:none;color:var(--text)}
+  nav a{margin-left:16px;text-decoration:none;color:var(--muted);font-size:.95rem}
+  nav a:hover,nav a[aria-current]{color:var(--text)}
+  .banner{background:var(--warn-bg);color:var(--warn);padding:8px 0;font-size:.9rem}
+  main{padding:28px 0 48px}
+  h1{margin:0 0 4px;font-size:1.7rem}
+  h2{margin:0 0 12px;font-size:1.15rem}
+  .lead{color:var(--muted);margin:0 0 20px;overflow-wrap:anywhere}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+  .btn{display:inline-block;padding:10px 18px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;text-decoration:none;cursor:pointer}
+  .btn.secondary{background:transparent;color:var(--accent)}
+  input{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
+  .pick{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+  .pick input{flex:1;min-width:200px}
+  .stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:16px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+  .stat .n{font-size:1.7rem;font-weight:700}
+  .stat .l{color:var(--muted);font-size:.85rem}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:600;background:var(--info-bg);color:var(--accent)}
+  .pill.ok{background:var(--ok-bg);color:var(--ok)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad)}
+  .finding{border-top:1px solid var(--border);padding:12px 0}
+  .finding:first-of-type{border-top:0}
+  .finding h3{margin:0 0 4px;font-size:1rem}
+  .finding p{margin:4px 0 0;color:var(--muted)}
+  blockquote{margin:8px 0 0;padding-left:12px;border-left:3px solid var(--border);color:var(--text)}
+  .meta{color:var(--muted);font-size:.85rem}
+  .notice{padding:10px 12px;border-radius:8px;background:var(--warn-bg);color:var(--warn)}
+  ul.plain{margin:0;padding-left:20px;color:var(--muted)}
+  @media print{header.site,.pick,.banner{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">TestRunner</a>
+    <nav aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="order.html">Order a test</a>
+      <a href="report.html" aria-current="page">View a report</a>
+      <a href="brief.html">Tester brief</a>
+      <a href="console.html">Operator</a>
+      <a href="proof.html">Proof</a>
+    </nav>
+  </div>
+</header>
+<div class="banner" id="demoBanner" hidden><div class="wrap">Demo data. Findings and testers are examples.</div></div>
+
+<main class="wrap">
+  <form class="pick" id="pickForm">
+    <label for="orderId" style="position:absolute;left:-9999px">Order number</label>
+    <input id="orderId" placeholder="Order number, e.g. TR-1001" autocomplete="off">
+    <button class="btn secondary" type="submit">Open report</button>
+  </form>
+  <div id="out" aria-live="polite"><p>Enter an order number to see its report.</p></div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const LS_KEY = 'testrunner.orders.v1';
+  const SEVERITY_CLASS = { high: 'bad', medium: 'warn', low: '' };
+  const $ = (id) => document.getElementById(id);
+
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else el.setAttribute(k, v === true ? '' : v);
+    }
+    for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    return el;
+  }
+
+  const isHttpUrl = (s) => { try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } };
+  const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+
+  async function loadData() {
+    let base = { meta: {}, orders: [] };
+    try {
+      const res = await fetch('status.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      base = await res.json();
+    } catch (err) { console.warn('status.json unavailable:', err.message); }
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { /* storage blocked */ }
+    const known = new Set((base.orders || []).map(o => o.id));
+    return { ...base, orders: (base.orders || []).concat(local.filter(o => !known.has(o.id))) };
+  }
+
+  function stat(value, label) {
+    return h('div', { class: 'stat' }, h('div', { class: 'n', text: String(value) }), h('div', { class: 'l', text: label }));
+  }
+
+  function render(order) {
+    const subs = order.submissions || [];
+    const approved = subs.filter(s => s.status === 'approved');
+    const completed = approved.filter(s => s.completed).length;
+    const avg = approved.length ? (approved.reduce((t, s) => t + s.rating, 0) / approved.length).toFixed(1) : '–';
+    const paid = order.payment && order.payment.status === 'paid';
+
+    const parts = [
+      h('h1', { text: order.sponsor + ' — test report' }),
+      h('p', { class: 'lead' }, order.id + ' · ' + fmtDate(order.createdAt) + ' · ',
+        isHttpUrl(order.url) ? h('a', { href: order.url, target: '_blank', rel: 'noopener noreferrer', text: order.url }) : order.url),
+    ];
+
+    if (!order.report) {
+      parts.push(h('div', { class: 'notice', text: 'This report is not ready yet. It appears here once testers have finished and results are reviewed.' }));
+      $('out').replaceChildren(...parts);
+      return;
+    }
+
+    parts.push(
+      h('div', { class: 'card' }, h('h2', { text: 'Summary' }), h('p', { text: order.report.summary }), h('p', { class: 'meta' }, 'Task given to testers: ' + order.goals)),
+      h('div', { class: 'stats' },
+        stat(completed + ' / ' + order.testers, 'Testers completed the task'),
+        stat(avg, 'Average rating (out of 5)'),
+        stat((order.report.findings || []).length, 'Issues found'),
+        h('div', { class: 'stat' }, h('div', { class: 'n' }, h('span', { class: 'pill ' + (paid ? 'ok' : 'warn'), text: paid ? 'Paid' : 'Unpaid' })), h('div', { class: 'l', text: 'Payment status' })))
+    );
+
+    const findings = h('div', { class: 'card' }, h('h2', { text: 'Issues, most serious first' }));
+    const rank = { high: 0, medium: 1, low: 2 };
+    [...(order.report.findings || [])].sort((a, b) => (rank[a.severity] ?? 3) - (rank[b.severity] ?? 3)).forEach(f => {
+      findings.append(h('div', { class: 'finding' },
+        h('h3', {}, h('span', { class: 'pill ' + (SEVERITY_CLASS[f.severity] || ''), text: f.severity }), ' ', f.title),
+        h('p', { text: f.detail }),
+        h('p', { class: 'meta', text: 'Mentioned by ' + f.count + (f.count === 1 ? ' tester' : ' testers') })));
+    });
+    parts.push(findings);
+
+    const pf = order.preflight;
+    if (pf && pf.notes && pf.notes.length) {
+      parts.push(h('div', { class: 'card' }, h('h2', { text: 'Automated page check' }),
+        h('p', { class: 'meta', text: 'Result: ' + pf.status + (pf.checkedAt ? ' · ' + fmtDate(pf.checkedAt) : '') }),
+        h('ul', { class: 'plain' }, pf.notes.map(n => h('li', { text: n })))));
+    }
+
+    const voices = h('div', { class: 'card' }, h('h2', { text: 'What testers wrote' }));
+    subs.forEach(s => {
+      voices.append(h('div', { class: 'finding' },
+        h('h3', {}, s.tester + ' ', h('span', { class: 'pill ' + (s.status === 'approved' ? 'ok' : 'bad'), text: s.status === 'approved' ? 'counted' : 'not counted' })),
+        h('p', { class: 'meta', text: 'Rating ' + s.rating + '/5 · ' + (s.completed ? 'finished the task' : 'did not finish') }),
+        h('blockquote', { text: s.feedback })));
+    });
+    parts.push(voices);
+    parts.push(h('p', {}, h('button', { class: 'btn secondary', type: 'button', id: 'printBtn' }, 'Print or save as PDF')));
+
+    $('out').replaceChildren(...parts);
+    $('printBtn').addEventListener('click', () => window.print());
+  }
+
+  async function open(id) {
+    const data = await loadData();
+    if (data.meta && data.meta.mode === 'demo') $('demoBanner').hidden = false;
+    const order = data.orders.find(o => o.id.toLowerCase() === id.trim().toLowerCase());
+    if (!order) { $('out').replaceChildren(h('div', { class: 'notice', text: 'No order found with that number.' })); return; }
+    document.title = order.sponsor + ' report — TestRunner';
+    render(order);
+  }
+
+  $('pickForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = $('orderId').value.trim();
+    if (!id) return;
+    const url = new URL(location.href);
+    url.searchParams.set('order', id);
+    history.replaceState(null, '', url);
+    open(id);
+  });
+
+  const initial = new URLSearchParams(location.search).get('order');
+  if (initial) { $('orderId').value = initial; open(initial); }
+})();
+</script>
+</body>
+</html>

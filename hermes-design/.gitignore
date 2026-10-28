@@ -1,0 +1,13 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# local demo state written by server.mjs
+data/
+
+# tooling / OS
+node_modules/
+.DS_Store
+Thumbs.db
+_to_delete/

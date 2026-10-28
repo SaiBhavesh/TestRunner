@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Make a Million | Turn your idea into a business</title>
+<!--
+  DEMO CUSTOMER SITE for the TestRunner hackathon demo.
+  This is a fictional startup. It has a few bugs planted ON PURPOSE so that
+  TestRunner's scan and the human testers have real problems to find:
+
+
+  BUG 1 (console error):   a script calls a function that doesn't exist on load
+  BUG 2 (broken link):     "Success stories" points to a page that doesn't exist (404)
+  BUG 3 (accessibility):   hero image has no alt text, low-contrast fine print
+  BUG 4 (mobile UX):       on phones, the main "Start free" button is hidden;
+                           the only way to sign up is a small link in the footer
+  BUG 5 (confusing flow):  sign-up asks for "workspace slug" with no explanation,
+                           and the success message is vague
+
+
+  To make a "fixed" version for a before/after, set FIXED = true in the script.
+-->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0c0a09;--card:#1c1917;--line:#292524;--ink:#fafaf9;--muted:#a8a29e;--gold:#facc15;--gold-ink:#1c1917;--green:#4ade80}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  a{color:inherit}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  nav .wrap{display:flex;justify-content:space-between;align-items:center;height:68px}
+  .logo{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:20px;letter-spacing:-.02em}
+  .logo span{color:var(--gold)}
+  .links{display:flex;gap:24px;font-size:14px;color:var(--muted)}
+  .links a{text-decoration:none}
+  .btn{display:inline-block;background:var(--gold);color:var(--gold-ink);font-weight:600;border:0;border-radius:10px;padding:13px 22px;text-decoration:none;cursor:pointer;font-size:15px}
+  .btn-outline{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .hero{padding:80px 0 60px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+  h1{font-family:"Space Grotesk",sans-serif;font-size:clamp(36px,5.5vw,62px);line-height:1.05;letter-spacing:-.03em}
+  h1 em{font-style:normal;color:var(--gold)}
+  .sub{color:var(--muted);font-size:18px;margin:20px 0 28px;max-width:520px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .fine{font-size:12px;color:#57534e;margin-top:14px} /* BUG 3: low contrast on dark bg */
+  .hero-img{width:100%;border-radius:18px;border:1px solid var(--line);aspect-ratio:4/3;object-fit:cover;background:var(--card)}
+  section{padding:70px 0}
+  h2{font-family:"Space Grotesk",sans-serif;font-size:clamp(28px,4vw,40px);letter-spacing:-.02em}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .card h3{font-size:18px;margin:10px 0 6px}
+  .card p{color:var(--muted);font-size:15px}
+  .num{font-family:"Space Grotesk",sans-serif;color:var(--gold);font-weight:700}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;text-align:center}
+  .stats b{display:block;font-family:"Space Grotesk",sans-serif;font-size:36px;color:var(--gold)}
+  .stats small{color:var(--muted)}
+  .signup{max-width:480px;margin:32px auto 0;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px}
+  label{display:block;font-size:14px;font-weight:600;margin:14px 0 6px}
+  input{width:100%;background:#0c0a09;border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--ink);font-size:15px}
+  .msg{display:none;margin-top:16px;padding:12px;border-radius:10px;font-size:14px}
+  .msg.ok{background:rgba(74,222,128,.12);color:var(--green)}
+  .msg.err{background:rgba(248,113,113,.12);color:#fca5a5}
+  footer{border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-size:14px}
+  footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  footer a{font-size:12px}
+  @media (max-width:820px){
+    .hero,.grid,.stats{grid-template-columns:1fr}
+    .links{display:none}
+    .cta .btn:first-child{display:none}            /* BUG 4: main sign-up button hidden on mobile */
+    nav .btn{display:none}
+  }
+  body.fixed .fine{color:#a8a29e}
+  @media (max-width:820px){ body.fixed .cta .btn:first-child, body.fixed nav .btn{display:inline-block} }
+</style>
+</head>
+<body>
+
+
+<nav>
+  <div class="wrap">
+    <div class="logo">Make a <span>Million</span></div>
+    <div class="links">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="/success-stories" id="storiesLink">Success stories</a> <!-- BUG 2: page doesn't exist -->
+      <a href="#signup">Pricing</a>
+    </div>
+    <a class="btn" href="#signup">Start free</a>
+  </div>
+</nav>
+
+
+<header class="wrap hero">
+  <div>
+    <h1>Your idea could be worth <em>$1,000,000.</em> Find out in 10 minutes.</h1>
+    <p class="sub">Make a Million turns your app idea into a business plan, a market size estimate, and a 90-day launch roadmap, powered by AI.</p>
+    <div class="cta">
+      <a class="btn" href="#signup">Start free</a>
+      <a class="btn btn-outline" href="#how">See how it works</a>
+    </div>
+    <p class="fine">Free plan includes 1 idea. No credit card required. Results are estimates, not financial advice.</p>
+  </div>
+  <!-- BUG 3: no alt text -->
+  <img class="hero-img" id="heroImg" src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=900&q=70">
+</header>
+
+
+<section id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <div class="grid">
+      <div class="card"><span class="num">01</span><h3>Describe your idea</h3><p>Tell us what you want to build and who it's for, in plain English.</p></div>
+      <div class="card"><span class="num">02</span><h3>Get your numbers</h3><p>We estimate market size, pricing, and what it takes to reach $1M in revenue.</p></div>
+      <div class="card"><span class="num">03</span><h3>Launch in 90 days</h3><p>A week-by-week roadmap with the first customers to talk to.</p></div>
+    </div>
+  </div>
+</section>
+
+
+<section id="features" style="padding-top:10px">
+  <div class="wrap">
+    <h2>Built for first-time founders</h2>
+    <div class="grid">
+      <div class="card"><h3>💰 Revenue calculator</h3><p>See how many customers you need at each price to hit $1M.</p></div>
+      <div class="card"><h3>📊 Market sizing</h3><p>Rough market estimates so you know if the idea is big enough.</p></div>
+      <div class="card"><h3>🗺️ Launch roadmap</h3><p>A clear plan from idea to first paying customer.</p></div>
+    </div>
+    <div class="stats">
+      <div><b>3 steps</b><small>idea to plan</small></div>
+      <div><b>10 min</b><small>average time</small></div>
+      <div><b>$0</b><small>to start</small></div>
+    </div>
+  </div>
+</section>
+
+
+<section id="signup" style="padding-top:10px">
+  <div class="wrap">
+    <h2 style="text-align:center">Create your free account</h2>
+    <form class="signup" id="signupForm">
+      <label for="name">Full name</label>
+      <input id="name" required>
+      <label for="email">Email</label>
+      <input id="email" type="email" required>
+      <label for="slug">Workspace slug</label> <!-- BUG 5: jargon, no explanation -->
+      <input id="slug" required>
+      <label for="pw">Password</label>
+      <input id="pw" type="password" required minlength="8">
+      <button class="btn" style="width:100%;margin-top:20px" type="submit">Create account</button>
+      <div class="msg" id="msg"></div>
+    </form>
+  </div>
+</section>
+
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Make a Million (demo startup)</span>
+    <a href="#signup">sign up</a> <!-- on mobile this tiny link is the only way to find sign-up -->
+  </div>
+</footer>
+
+
+<script>
+  const FIXED = false; // set true for the "after" version in a before/after demo
+
+
+  if (FIXED) {
+    document.body.classList.add("fixed");
+    document.getElementById("heroImg").alt = "Founder planning a startup on a laptop";
+    document.getElementById("storiesLink").setAttribute("href", "#how");
+    document.querySelector('label[for="slug"]').textContent = "Workspace name (used in your link, e.g. my-startup)";
+  } else {
+    // BUG 1: calls a function that doesn't exist, throws a console error on load
+    // (in a timeout so the rest of the page keeps working)
+    setTimeout(() => initAnalytics(), 0);
+  }
+
+
+  document.getElementById("signupForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const msg = document.getElementById("msg");
+    const pw = document.getElementById("pw").value;
+    if (pw.length < 8) {
+      msg.className = "msg err";
+      msg.textContent = "Password must be at least 8 characters.";
+    } else {
+      msg.className = "msg ok";
+      msg.textContent = FIXED
+        ? "Account created! Check your email to confirm, then describe your first idea."
+        : "Done."; // BUG 5: vague success message
+    }
+    msg.style.display = "block";
+  });
+</script>
+</body>
+</html>

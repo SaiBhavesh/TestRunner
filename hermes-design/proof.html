@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proof of work — TestRunner</title>
+<style>
+  :root{--bg:#f6f7f9;--surface:#fff;--text:#14181f;--muted:#5b6575;--border:#dde1e8;--accent:#2457d6;--accent-ink:#fff;--ok:#127a46;--ok-bg:#e3f4ea;--warn:#8a5a00;--warn-bg:#fdf0d5;--bad:#b3261e;--bad-bg:#fbe5e3;--info-bg:#e6edfb;--radius:10px}
+  @media (prefers-color-scheme:dark){:root{--bg:#0f1318;--surface:#171c23;--text:#e8ebf0;--muted:#98a2b3;--border:#2a323d;--accent:#6b93ff;--accent-ink:#0b1020;--ok:#5fd38d;--ok-bg:#12301f;--warn:#f0b955;--warn-bg:#3a2c0e;--bad:#ff8a80;--bad-bg:#3d1714;--info-bg:#1a2745}}
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:var(--accent)}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+  header.site{background:var(--surface);border-bottom:1px solid var(--border)}
+  header.site .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;flex-wrap:wrap}
+  .brand{font-weight:700;text-decoration:none;color:var(--text)}
+  nav a{margin-left:16px;text-decoration:none;color:var(--muted);font-size:.95rem}
+  nav a:hover,nav a[aria-current]{color:var(--text)}
+  .banner{background:var(--warn-bg);color:var(--warn);padding:8px 0;font-size:.9rem}
+  main{padding:24px 0 48px}
+  h1{margin:0 0 4px;font-size:1.6rem}
+  h2{margin:0 0 12px;font-size:1.1rem}
+  .lead{color:var(--muted);margin:0 0 20px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+  .cols{display:grid;gap:16px;grid-template-columns:1fr}
+  @media (min-width:900px){.cols{grid-template-columns:1fr 1fr}}
+  .cols>*{min-width:0}
+  .card{overflow-wrap:anywhere}
+  .stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:16px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+  .stat .n{font-size:1.6rem;font-weight:700}
+  .stat .l{color:var(--muted);font-size:.85rem}
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.82rem;text-transform:uppercase;letter-spacing:.03em}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--info-bg);color:var(--accent);white-space:nowrap}
+  .pill.ok{background:var(--ok-bg);color:var(--ok)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad)}
+  .btn{display:inline-block;padding:6px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+  .btn.secondary{background:transparent;color:var(--accent)}
+  .btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+  .btn.small{padding:3px 10px;font-size:.85rem}
+  .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+  ul.plain{list-style:none;margin:0;padding:0}
+  ul.plain li{padding:6px 0;border-bottom:1px solid var(--border)}
+  ul.plain li:last-child{border-bottom:0}
+  .meta{color:var(--muted);font-size:.85rem}
+  .quote{margin:6px 0 0;padding-left:10px;border-left:3px solid var(--border)}
+  pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;overflow:auto;font-size:.82rem;max-height:220px;margin:8px 0}
+  .check{display:flex;gap:8px;align-items:flex-start;padding:4px 0}
+  .empty{color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="site"><div class="wrap">
+  <a class="brand" href="index.html">TestRunner</a>
+  <nav aria-label="Main"><a href="index.html">Home</a><a href="order.html">Order a test</a><a href="report.html">View a report</a><a href="brief.html">Tester brief</a><a href="console.html">Operator</a><a href="proof.html" aria-current="page">Proof</a></nav>
+</div></header>
+<main><div class="wrap">
+  <h1>Proof of work</h1>
+  <p class="lead">What each page does, what each agent has done, and which MCP calls really happened. Everything below is read from <code>status.json</code>.</p>
+  <div id="app" aria-live="polite"><p class="empty">Loading…</p></div>
+</div></main>
+<script>
+(() => {
+  'use strict';
+  const app = document.getElementById('app');
+  const SERVICES = [['terac','Terac','Human testers: price, launch, collect, pay'],['solari','Solari','Cloud browser: check the customer page'],['whop','Whop','Payments: sponsor pays, payment confirmed']];
+  const PAGES = [
+    ['index.html','Landing page','Explains the service to startups.','Static, reads nothing.'],
+    ['order.html','Order and pay','Sponsor submits a page to test, sees status, pays through Whop.','Reads status.json and local orders; pay link only to whop.com.'],
+    ['brief.html','Tester brief','Testers read the task and send feedback.','Writes pending submissions to the browser only.'],
+    ['report.html','Report','Shows ranked findings backed by tester quotes.','Reads the finished order from status.json.'],
+    ['console.html','Operator console','Operator approves budgets and tester results.','Reads status.json; decisions are exported, not sent.'],
+    ['proof.html','Proof of work','This page.','Reads status.json.']
+  ];
+  const AGENTS = [
+    ['Manager','manager-bot','Hermes. Moves stages, confirms payment, applies approvals.','terac, whop'],
+    ['Sales','sale-bot','Finds customers, makes the Whop checkout.','solari, whop'],
+    ['Browser','browser-bot','Checks the customer page, takes screenshots.','solari'],
+    ['Research','research-bot','Asks Terac for a price, launches, collects results.','terac'],
+    ['Report','report-bot','Writes the report from approved results.','solari, terac']
+  ];
+  const el = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) { if (k === 'class') n.className = v; else n.setAttribute(k, v); }
+    for (const c of kids) if (c !== null && c !== undefined && c !== false) n.append(c.nodeType ? c : document.createTextNode(String(c)));
+    return n;
+  };
+  const when = t => { const d = new Date(t); return isNaN(d) ? '—' : d.toLocaleString(); };
+  const table = (head, rows) => el('div', { class: 'tablewrap' }, el('table', {},
+    el('thead', {}, el('tr', {}, ...head.map(h => el('th', {}, h)))),
+    el('tbody', {}, ...rows.map(r => el('tr', {}, ...r.map(c => el('td', {}, c)))))));
+  const card = (title, ...kids) => el('section', { class: 'card' }, el('h2', {}, title), ...kids);
+
+  function render(d) {
+    const calls = d.mcpCalls || [];
+    const acts = d.activity || [];
+    const out = [];
+
+    const stats = el('div', { class: 'stats' });
+    for (const [key, name] of SERVICES) {
+      const n = calls.filter(c => c.service === key).length;
+      stats.append(el('div', { class: 'stat' }, el('div', { class: 'n' }, n), el('div', { class: 'l' }, name + ' calls recorded')));
+    }
+    out.push(stats);
+
+    out.push(card('MCP proof',
+      el('p', { class: 'meta' }, 'A service counts as used only when a real call is recorded below. Sample orders are not counted.'),
+      table(['Service', 'Status', 'Used for', 'Calls', 'Last tool', 'Last call'], SERVICES.map(([key, name, use]) => {
+        const c = calls.filter(x => x.service === key);
+        const last = c[c.length - 1];
+        return [name, el('span', { class: 'pill ' + (c.length ? 'ok' : 'warn') }, c.length ? 'In use' : 'No calls recorded'), use, c.length, last ? last.tool : '—', last ? when(last.at) : '—'];
+      }))));
+
+    out.push(card('Call log',
+      calls.length ? table(['Time', 'Service', 'Tool', 'Order', 'Result id', 'Bot'],
+        calls.slice().reverse().map(c => [when(c.at), c.service, c.tool, c.orderId || '—', c.resultId || '—', c.bot || '—']))
+      : el('p', { class: 'empty' }, 'No MCP calls recorded yet.')));
+
+    out.push(card('Agents',
+      table(['Agent', 'Bot', 'Role', 'MCPs', 'MCP calls', 'Activity entries'], AGENTS.map(([name, bot, role, mcps]) => [
+        name, bot, role, mcps,
+        calls.filter(c => c.bot === bot).length,
+        acts.filter(a => (a.agent || '').toLowerCase() === name.toLowerCase()).length
+      ]))));
+
+    out.push(card('Activity feed',
+      acts.length ? table(['Time', 'Agent', 'What happened'], acts.slice().reverse().map(a => [when(a.at), a.agent || '—', a.msg || '—']))
+      : el('p', { class: 'empty' }, 'No activity yet.')));
+
+    out.push(card('Pages',
+      table(['Page', 'Name', 'Job', 'Data'], PAGES.map(([f, n, j, dt]) => [el('a', { href: f }, f), n, j, dt]))));
+
+    const orders = d.orders || [];
+    out.push(card('Orders and their Terac state',
+      table(['Order', 'Sponsor', 'Stage', 'Terac status', 'Feasibility request', 'Quote'], orders.map(o => [
+        o.id, o.sponsor, o.stage, (o.terac && o.terac.status) || '—',
+        (o.terac && o.terac.feasibilityRequestId) || '—',
+        o.quote && o.quote.amount != null ? '$' + o.quote.amount : (o.quote && o.quote.status) || '—'
+      ]))));
+
+    app.replaceChildren(...out);
+  }
+
+  fetch('status.json', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(render)
+    .catch(e => app.replaceChildren(el('p', { class: 'empty' }, 'Could not load status.json (' + e.message + '). Serve the folder over http, not file://.')));
+})();
+</script>
+</body>
+</html>

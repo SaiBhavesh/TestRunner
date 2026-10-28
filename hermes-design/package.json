@@ -1,0 +1,13 @@
+{
+  "name": "testrunner",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TestRunner by RewardSocial: an agent-run website testing company (hackathon demo).",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.mjs",
+    "pages": "python3 -m http.server 8000 --bind 127.0.0.1"
+  },
+  "license": "UNLICENSED"
+}

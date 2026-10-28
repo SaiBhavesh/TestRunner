@@ -8,3 +8,8 @@ __pycache__/
 *.db-shm
 app/static/shots/
 *.zip
+.env.*
+!.env.example
+testrunner_html/
+.DS_Store
+Thumbs.db

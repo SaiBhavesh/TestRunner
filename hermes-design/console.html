@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operator console — TestRunner</title>
+<style>
+  :root{--bg:#f6f7f9;--surface:#fff;--text:#14181f;--muted:#5b6575;--border:#dde1e8;--accent:#2457d6;--accent-ink:#fff;--ok:#127a46;--ok-bg:#e3f4ea;--warn:#8a5a00;--warn-bg:#fdf0d5;--bad:#b3261e;--bad-bg:#fbe5e3;--info-bg:#e6edfb;--radius:10px}
+  @media (prefers-color-scheme:dark){:root{--bg:#0f1318;--surface:#171c23;--text:#e8ebf0;--muted:#98a2b3;--border:#2a323d;--accent:#6b93ff;--accent-ink:#0b1020;--ok:#5fd38d;--ok-bg:#12301f;--warn:#f0b955;--warn-bg:#3a2c0e;--bad:#ff8a80;--bad-bg:#3d1714;--info-bg:#1a2745}}
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:var(--accent)}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+  header.site{background:var(--surface);border-bottom:1px solid var(--border)}
+  header.site .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;flex-wrap:wrap}
+  .brand{font-weight:700;text-decoration:none;color:var(--text)}
+  nav a{margin-left:16px;text-decoration:none;color:var(--muted);font-size:.95rem}
+  nav a:hover,nav a[aria-current]{color:var(--text)}
+  .banner{background:var(--warn-bg);color:var(--warn);padding:8px 0;font-size:.9rem}
+  main{padding:24px 0 48px}
+  h1{margin:0 0 4px;font-size:1.6rem}
+  h2{margin:0 0 12px;font-size:1.1rem}
+  .lead{color:var(--muted);margin:0 0 20px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
+  .cols{display:grid;gap:16px;grid-template-columns:1fr}
+  @media (min-width:900px){.cols{grid-template-columns:1fr 1fr}}
+  .cols>*{min-width:0}
+  .card{overflow-wrap:anywhere}
+  .stats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:16px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+  .stat .n{font-size:1.6rem;font-weight:700}
+  .stat .l{color:var(--muted);font-size:.85rem}
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:.82rem;text-transform:uppercase;letter-spacing:.03em}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--info-bg);color:var(--accent);white-space:nowrap}
+  .pill.ok{background:var(--ok-bg);color:var(--ok)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad)}
+  .btn{display:inline-block;padding:6px 12px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+  .btn.secondary{background:transparent;color:var(--accent)}
+  .btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+  .btn.small{padding:3px 10px;font-size:.85rem}
+  .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+  ul.plain{list-style:none;margin:0;padding:0}
+  ul.plain li{padding:6px 0;border-bottom:1px solid var(--border)}
+  ul.plain li:last-child{border-bottom:0}
+  .meta{color:var(--muted);font-size:.85rem}
+  .quote{margin:6px 0 0;padding-left:10px;border-left:3px solid var(--border)}
+  pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;overflow:auto;font-size:.82rem;max-height:220px;margin:8px 0}
+  .check{display:flex;gap:8px;align-items:flex-start;padding:4px 0}
+  .empty{color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">TestRunner</a>
+    <nav aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="order.html">Order a test</a>
+      <a href="report.html">View a report</a>
+      <a href="brief.html">Tester brief</a>
+      <a href="console.html" aria-current="page">Operator</a>
+      <a href="proof.html">Proof</a>
+    </nav>
+  </div>
+</header>
+<div class="banner" id="demoBanner" hidden><div class="wrap">Demo data. This page shows what the agents saved in status.json. It does not talk to Terac, Solari or Whop itself.</div></div>
+
+<main class="wrap">
+  <h1>Operator console</h1>
+  <p class="lead">One place to see every order, the payment state in Whop, and the results that need your approval before any money moves.</p>
+  <div id="app" aria-live="polite"><p>Loading…</p></div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const LS_ORDERS = 'testrunner.orders.v1';
+  const LS_SUBS = 'testrunner.submissions.v1';
+  const LS_DECISIONS = 'testrunner.decisions.v1';
+  const NEXT_STAGE = { submitted: 'preflight', preflight: 'quote_pending', quote_pending: 'quoted', quoted: 'paid', paid: 'testing', testing: 'review', review: 'complete' };
+  const STAGE_LABEL = { submitted: 'Received', preflight: 'Screened', quote_pending: 'Awaiting quote', quoted: 'Awaiting payment', paid: 'Paid', testing: 'Testing', review: 'In review', complete: 'Complete' };
+  const STAGE_TONE = { quote_pending: 'warn', quoted: 'warn', review: 'warn', complete: 'ok', paid: 'ok' };
+
+  const state = { data: null, local: [], subs: {}, decisions: [], confirming: null, loadError: null };
+
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    }
+    for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    return el;
+  }
+
+  const money = (n, c) => (typeof n === 'number' ? new Intl.NumberFormat(undefined, { style: 'currency', currency: c || 'USD' }).format(n) : '—');
+  const when = (iso) => (iso ? new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—');
+  const isWhopUrl = (s) => { try { const u = new URL(s); return u.protocol === 'https:' && (u.hostname === 'whop.com' || u.hostname.endsWith('.whop.com')); } catch { return false; } };
+  const pill = (text, tone) => h('span', { class: 'pill' + (tone ? ' ' + tone : ''), text });
+
+  /* ---------- storage ---------- */
+  function readJson(key, fallback) { try { const v = JSON.parse(localStorage.getItem(key)); return v == null ? fallback : v; } catch { return fallback; } }
+  function writeJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; } }
+
+  async function load() {
+    let data = { meta: {}, whop: {}, orders: [], activity: [] };
+    try {
+      const res = await fetch('status.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      data = await res.json();
+      state.loadError = null;
+    } catch (err) {
+      state.loadError = 'Could not load status.json (' + err.message + '). Showing browser data only.';
+    }
+    state.local = readJson(LS_ORDERS, []);
+    state.subs = readJson(LS_SUBS, {});
+    state.decisions = readJson(LS_DECISIONS, []);
+    state.data = data;
+  }
+
+  const allOrders = () => {
+    const base = state.data.orders || [];
+    const known = new Set(base.map(o => o.id));
+    return base.concat(state.local.filter(o => !known.has(o.id)));
+  };
+
+  /* ---------- demo-only stage simulation for orders made in this browser ---------- */
+  function simulateNext(order) {
+    const next = NEXT_STAGE[order.stage];
+    if (!next) return;
+    const now = new Date().toISOString();
+    order.stage = next;
+    order.simulated = true;
+    if (next === 'preflight') order.preflight = { status: 'passed', checkedAt: now, notes: ['Simulated: page loads'] };
+    if (next === 'quote_pending') { order.quote.status = 'awaiting_terac'; order.terac.status = 'feasibility_requested'; }
+    if (next === 'quoted') order.quote = { status: 'quoted', amount: order.testers * 30, currency: 'USD' };
+    if (next === 'paid') order.payment = { status: 'paid', whopPaymentId: 'pay_simulated_' + Date.now().toString(36), paidAt: now };
+    if (next === 'complete') order.report = { summary: 'Simulated report for demo purposes.', findings: [] };
+    writeJson(LS_ORDERS, state.local);
+    render();
+  }
+
+  /* ---------- approvals ---------- */
+  function pendingItems() {
+    const items = [];
+    for (const o of allOrders()) {
+      const subs = (o.submissions || []).concat(state.subs[o.id] || []);
+      for (const s of subs) {
+        if (s.status === 'pending') items.push({ order: o, sub: s });
+      }
+    }
+    return items;
+  }
+  const decisionFor = (orderId, subId) => state.decisions.find(d => d.orderId === orderId && d.submissionId === subId);
+
+  function decide(orderId, subId, decision) {
+    state.decisions = state.decisions.filter(d => !(d.orderId === orderId && d.submissionId === subId));
+    state.decisions.push({ orderId, submissionId: subId, decision, decidedAt: new Date().toISOString() });
+    state.confirming = null;
+    writeJson(LS_DECISIONS, state.decisions);
+    render();
+  }
+
+  function approvalRow({ order, sub }) {
+    const decided = decisionFor(order.id, sub.id);
+    const key = order.id + '/' + sub.id;
+    const actions = h('div', { class: 'row-actions' });
+    if (decided) {
+      actions.append(pill(decided.decision === 'approve' ? 'Approved by you' : 'Rejected by you', decided.decision === 'approve' ? 'ok' : 'bad'),
+        h('button', { class: 'btn secondary small', type: 'button', onclick: () => { state.decisions = state.decisions.filter(d => d !== decided); writeJson(LS_DECISIONS, state.decisions); render(); } }, 'Undo'));
+    } else if (state.confirming && state.confirming.key === key) {
+      const approving = state.confirming.decision === 'approve';
+      actions.append(
+        h('span', { class: 'meta', text: approving ? 'Approving pays the tester.' : 'Reject this result?' }),
+        h('button', { class: 'btn small' + (approving ? '' : ' danger'), type: 'button', onclick: () => decide(order.id, sub.id, state.confirming.decision) }, approving ? 'Confirm approve' : 'Confirm reject'),
+        h('button', { class: 'btn secondary small', type: 'button', onclick: () => { state.confirming = null; render(); } }, 'Cancel'));
+    } else {
+      actions.append(
+        h('button', { class: 'btn small', type: 'button', onclick: () => { state.confirming = { key, decision: 'approve' }; render(); } }, 'Approve'),
+        h('button', { class: 'btn secondary small', type: 'button', onclick: () => { state.confirming = { key, decision: 'reject' }; render(); } }, 'Reject'));
+    }
+    return h('li', {},
+      h('strong', { text: order.id + ' · ' + sub.tester }), ' ', h('span', { class: 'meta', text: 'rating ' + sub.rating + '/5 · ' + (sub.completed ? 'finished' : 'not finished') }),
+      h('div', { class: 'quote', text: sub.feedback }), actions);
+  }
+
+  function exportPayload() {
+    return JSON.stringify({ exportedAt: new Date().toISOString(), decisions: state.decisions }, null, 2);
+  }
+
+  /* ---------- sections ---------- */
+  function statsSection(orders) {
+    const paid = orders.filter(o => o.payment && o.payment.status === 'paid');
+    const revenue = paid.reduce((t, o) => t + (o.quote && o.quote.amount || 0), 0);
+    const stat = (n, l) => h('div', { class: 'stat' }, h('div', { class: 'n', text: String(n) }), h('div', { class: 'l', text: l }));
+    return h('div', { class: 'stats' },
+      stat(orders.length, 'Orders'),
+      stat(orders.filter(o => o.stage === 'quote_pending').length, 'Waiting for a quote'),
+      stat(orders.filter(o => o.stage === 'quoted').length, 'Waiting for payment'),
+      stat(money(revenue, 'USD'), 'Paid through Whop'),
+      stat(pendingItems().filter(i => !decisionFor(i.order.id, i.sub.id)).length, 'Results to approve'));
+  }
+
+  function ordersSection(orders) {
+    const body = h('tbody');
+    orders.forEach(o => {
+      const links = h('div', { class: 'row-actions' },
+        h('a', { href: 'order.html?order=' + encodeURIComponent(o.id), text: 'Order' }),
+        h('a', { href: 'brief.html?order=' + encodeURIComponent(o.id), text: 'Brief' }),
+        h('a', { href: 'report.html?order=' + encodeURIComponent(o.id), text: 'Report' }));
+      if (o.source === 'local' && NEXT_STAGE[o.stage]) {
+        links.append(h('button', { class: 'btn secondary small', type: 'button', title: 'Demo only: moves this browser-made order forward with fake data', onclick: () => simulateNext(o) }, 'Simulate next step'));
+      }
+      body.append(h('tr', {},
+        h('td', {}, h('strong', { text: o.id }), o.simulated ? h('div', {}, pill('simulated', 'warn')) : null),
+        h('td', { text: o.sponsor }),
+        h('td', {}, pill(STAGE_LABEL[o.stage] || o.stage, STAGE_TONE[o.stage])),
+        h('td', { text: String(o.testers) }),
+        h('td', { text: o.quote && o.quote.amount != null ? money(o.quote.amount, o.quote.currency) : '—' }),
+        h('td', {}, pill(o.payment && o.payment.status === 'paid' ? 'Paid' : 'Unpaid', o.payment && o.payment.status === 'paid' ? 'ok' : 'warn')),
+        h('td', {}, links)));
+    });
+    return h('section', { class: 'card', 'aria-labelledby': 'ordH' },
+      h('h2', { id: 'ordH', text: 'Orders' }),
+      orders.length
+        ? h('div', { class: 'tablewrap' }, h('table', {}, h('thead', {}, h('tr', {}, ['Order', 'Business', 'Stage', 'Testers', 'Quote', 'Payment', 'Open'].map(t => h('th', { scope: 'col', text: t })))), body))
+        : h('p', { class: 'empty', text: 'No orders yet.' }));
+  }
+
+  function whopSection(orders) {
+    const whop = state.data.whop || {};
+    const paid = orders.filter(o => o.payment && o.payment.status === 'paid');
+    const waiting = orders.filter(o => o.stage === 'quoted' && !(o.payment && o.payment.status === 'paid'));
+    const check = (done, text, hint) => h('div', { class: 'check' }, pill(done ? 'done' : 'to do', done ? 'ok' : 'warn'), h('div', {}, text, hint ? h('div', { class: 'meta', text: hint }) : null));
+
+    const payBody = h('tbody');
+    paid.forEach(o => payBody.append(h('tr', {},
+      h('td', { text: o.id }), h('td', { text: money(o.quote.amount, o.quote.currency) }), h('td', { text: o.payment.whopPaymentId || '—' }), h('td', { text: when(o.payment.paidAt) }))));
+
+    return h('section', { class: 'card', 'aria-labelledby': 'whopH' },
+      h('h2', { id: 'whopH', text: 'Whop payments' }),
+      h('p', { class: 'meta' }, 'Business ', h('code', { text: whop.businessId || 'not set' }), ' · Product ', h('code', { text: whop.productId || 'not created' })),
+      check(!!whop.productId, 'Product created', 'Agent: products_create, then plans_create for the price.'),
+      check(isWhopUrl(whop.checkoutUrl), 'Checkout link published', 'Agent: checkout-configurations_create returns the link; put it in status.json as whop.checkoutUrl.'),
+      check(false, 'Payouts and identity verified in Whop', 'Check this in the Whop dashboard. This page cannot read it.'),
+      h('h2', { style: 'margin-top:16px', text: 'Confirmed payments' }),
+      paid.length
+        ? h('div', { class: 'tablewrap' }, h('table', {}, h('thead', {}, h('tr', {}, ['Order', 'Amount', 'Whop payment', 'Paid at'].map(t => h('th', { scope: 'col', text: t })))), payBody))
+        : h('p', { class: 'empty', text: 'No confirmed payments yet.' }),
+      h('p', { class: 'meta', style: 'margin-top:12px', text: waiting.length ? 'Waiting for payment: ' + waiting.map(o => o.id).join(', ') : 'No quotes waiting for payment.' }));
+  }
+
+  function approvalSection() {
+    const items = pendingItems();
+    const list = h('ul', { class: 'plain' }, items.map(approvalRow));
+    const section = h('section', { class: 'card', 'aria-labelledby': 'apprH' },
+      h('h2', { id: 'apprH', text: 'Approval gate' }),
+      h('p', { class: 'meta', text: 'Approving a result pays the tester automatically on the recruiting platform. Nothing is paid until the agent receives your decisions.' }),
+      items.length ? list : h('p', { class: 'empty', text: 'Nothing waiting for approval.' }));
+    if (state.decisions.length) {
+      const out = h('pre', { id: 'exportBox', text: exportPayload() });
+      section.append(h('h2', { style: 'margin-top:16px', text: 'Decisions for the agent' }), out,
+        h('div', { class: 'row-actions' },
+          h('button', { class: 'btn small', type: 'button', onclick: copyExport }, 'Copy JSON'),
+          h('button', { class: 'btn secondary small', type: 'button', onclick: downloadExport }, 'Download')),
+        h('p', { class: 'meta', id: 'exportMsg', role: 'status' }),
+        h('p', { class: 'meta', text: 'Give this to the agent. It calls approve_submission or reject_submission for each line.' }));
+    }
+    return section;
+  }
+
+  async function copyExport() {
+    const msg = document.getElementById('exportMsg');
+    try { await navigator.clipboard.writeText(exportPayload()); msg.textContent = 'Copied.'; }
+    catch { msg.textContent = 'Copy was blocked. Select the text above and copy it by hand.'; }
+  }
+  function downloadExport() {
+    const url = URL.createObjectURL(new Blob([exportPayload()], { type: 'application/json' }));
+    const a = h('a', { href: url, download: 'decisions.json' });
+    document.body.append(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function teracSection(orders) {
+    const label = { not_started: 'Not started', feasibility_requested: 'Waiting for quote', quoted: 'Quote received', launched: 'Recruiting', closed: 'Closed' };
+    const tone = { feasibility_requested: 'warn', closed: 'ok' };
+    const body = h('tbody');
+    orders.forEach(o => {
+      const t = o.terac || {};
+      const subs = o.submissions || [];
+      const count = (s) => subs.filter(x => x.status === s).length;
+      const paid = o.payment && o.payment.status === 'paid';
+      const started = t.status === 'launched' || t.status === 'closed';
+      const gate = started ? 'Launched' : paid ? 'Ready to launch' : 'Blocked until paid';
+      body.append(h('tr', {},
+        h('td', { text: o.id }),
+        h('td', {}, pill(label[t.status] || t.status || 'Unknown', tone[t.status])),
+        h('td', {}, h('code', { text: t.opportunityId || '—' })),
+        h('td', { text: count('approved') + ' / ' + count('rejected') + ' / ' + count('pending') }),
+        h('td', {}, pill(gate, gate === 'Ready to launch' ? 'ok' : gate === 'Blocked until paid' ? 'warn' : ''))));
+    });
+    return h('section', { class: 'card', 'aria-labelledby': 'teracH' },
+      h('h2', { id: 'teracH', text: 'Terac studies' }),
+      orders.length
+        ? h('div', { class: 'tablewrap' }, h('table', {}, h('thead', {}, h('tr', {}, ['Order', 'Status', 'Opportunity', 'Approved / rejected / pending', 'Launch gate'].map(t => h('th', { scope: 'col', text: t })))), body))
+        : h('p', { class: 'empty', text: 'No studies yet.' }),
+      h('p', { class: 'meta', style: 'margin-top:12px', text: 'Terac sends no alerts, so an agent checks for updates. A study launches only after Whop confirms payment.' }));
+  }
+
+  function mcpUsageSection() {
+    const calls = state.data.mcpCalls || [];
+    const label = { terac: 'Terac', solari: 'Solari', whop: 'Whop' };
+    const body = h('tbody');
+    Object.keys(label).forEach(svc => {
+      const mine = calls.filter(c => c.service === svc).sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+      const last = mine[0];
+      body.append(h('tr', {},
+        h('td', { text: label[svc] }),
+        h('td', {}, pill(mine.length ? 'In use' : 'No calls recorded', mine.length ? 'ok' : 'warn')),
+        h('td', { text: String(mine.length) }),
+        h('td', {}, last ? h('code', { text: last.tool }) : '—'),
+        h('td', { text: last ? when(last.at) : '—' })));
+    });
+    return h('section', { class: 'card', 'aria-labelledby': 'mcpH' },
+      h('h2', { id: 'mcpH', text: 'MCP usage' }),
+      h('div', { class: 'tablewrap' }, h('table', {}, h('thead', {}, h('tr', {}, ['Service', 'Status', 'Calls', 'Last tool', 'Last call'].map(t => h('th', { scope: 'col', text: t })))), body)),
+      h('p', { class: 'meta', style: 'margin-top:12px', text: 'Counts come only from calls the bots recorded in mcpCalls. The sample orders above are not counted.' }));
+  }
+
+  function activitySection() {
+    const items = [...(state.data.activity || [])].sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+    return h('section', { class: 'card', 'aria-labelledby': 'actH' },
+      h('h2', { id: 'actH', text: 'Agent activity' }),
+      items.length
+        ? h('ul', { class: 'plain' }, items.map(i => h('li', {}, pill(i.agent), ' ', i.msg, h('div', { class: 'meta', text: when(i.at) }))))
+        : h('p', { class: 'empty', text: 'No activity recorded.' }));
+  }
+
+  function rolesSection() {
+    const rows = [
+      ['Hermes', 'Runs the pipeline and writes status.json', 'Claude Code with all MCPs'],
+      ['Solari', 'Screens each page before anyone is paid', 'Solari MCP: browser tools'],
+      ['Terac', 'Prices the study, recruits testers, returns results', 'Terac MCP'],
+      ['Whop', 'Hosted checkout and payment records', 'Whop MCP'],
+      ['Report', 'Reviews results and writes the report', 'Claude, with your approvals']
+    ];
+    return h('section', { class: 'card', 'aria-labelledby': 'roleH' },
+      h('h2', { id: 'roleH', text: 'Who does what' }),
+      h('ul', { class: 'plain' }, rows.map(([n, d, via]) => h('li', {}, h('strong', { text: n }), ' — ' + d, h('div', { class: 'meta', text: via })))));
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    const orders = allOrders();
+    const app = document.getElementById('app');
+    document.getElementById('demoBanner').hidden = !(state.data.meta && state.data.meta.mode === 'demo');
+    app.replaceChildren(
+      state.loadError ? h('div', { class: 'card', role: 'alert', text: state.loadError }) : '',
+      statsSection(orders),
+      mcpUsageSection(),
+      ordersSection(orders),
+      h('div', { class: 'cols' }, whopSection(orders), approvalSection()),
+      h('div', { class: 'cols' }, teracSection(orders), activitySection()),
+      rolesSection(),
+      h('p', { class: 'meta' }, state.data.meta && state.data.meta.updatedAt ? 'status.json updated ' + when(state.data.meta.updatedAt) + ' · ' : '',
+        h('button', { class: 'btn secondary small', type: 'button', onclick: async () => { await load(); render(); } }, 'Refresh')));
+  }
+
+  load().then(render);
+})();
+</script>
+</body>
+</html>

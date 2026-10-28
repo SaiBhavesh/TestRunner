@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TestRunner — real people test your website</title>
+<meta name="description" content="Pay once, get a short report from real people who tried your site, with evidence.">
+<style>
+  :root{--bg:#f6f7f9;--surface:#fff;--text:#14181f;--muted:#5b6575;--border:#dde1e8;--accent:#2457d6;--accent-ink:#fff;--ok:#127a46;--ok-bg:#e3f4ea;--warn:#8a5a00;--warn-bg:#fdf0d5;--bad:#b3261e;--bad-bg:#fbe5e3;--info-bg:#e6edfb;--radius:10px}
+  @media (prefers-color-scheme:dark){:root{--bg:#0f1318;--surface:#171c23;--text:#e8ebf0;--muted:#98a2b3;--border:#2a323d;--accent:#6b93ff;--accent-ink:#0b1020;--ok:#5fd38d;--ok-bg:#12301f;--warn:#f0b955;--warn-bg:#3a2c0e;--bad:#ff8a80;--bad-bg:#3d1714;--info-bg:#1a2745}}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:var(--accent)}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  header.site{background:var(--surface);border-bottom:1px solid var(--border)}
+  header.site .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:56px;flex-wrap:wrap}
+  .brand{font-weight:700;text-decoration:none;color:var(--text)}
+  nav a{margin-left:16px;text-decoration:none;color:var(--muted);font-size:.95rem}
+  nav a:hover,nav a[aria-current]{color:var(--text)}
+  .btn{display:inline-block;padding:10px 18px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:600;text-decoration:none;cursor:pointer}
+  .btn.secondary{background:transparent;color:var(--accent)}
+  .banner{background:var(--warn-bg);color:var(--warn);padding:8px 0;font-size:.9rem}
+  .hero{padding:56px 0 32px}
+  .hero h1{font-size:clamp(1.9rem,4vw,2.8rem);line-height:1.15;margin:0 0 12px;max-width:20ch}
+  .hero p{color:var(--muted);max-width:56ch;margin:0 0 24px;font-size:1.1rem}
+  .actions{display:flex;gap:12px;flex-wrap:wrap}
+  section{padding:28px 0}
+  h2{margin:0 0 16px;font-size:1.35rem}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+  .card h3{margin:0 0 6px;font-size:1.05rem}
+  .card p{margin:0;color:var(--muted)}
+  .step-n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--info-bg);color:var(--accent);font-weight:700;margin-bottom:8px}
+  .price{font-size:2rem;font-weight:700}
+  footer{padding:32px 0;color:var(--muted);font-size:.9rem;border-top:1px solid var(--border);margin-top:24px}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">TestRunner</a>
+    <nav aria-label="Main">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="order.html">Order a test</a>
+      <a href="report.html">View a report</a>
+      <a href="brief.html">Tester brief</a>
+      <a href="console.html">Operator</a>
+      <a href="proof.html">Proof</a>
+    </nav>
+  </div>
+</header>
+<div class="banner" id="demoBanner" hidden><div class="wrap">Demo data. Payments, testers and reports on these pages are examples.</div></div>
+
+<main>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Real people try your website. You get a short report.</h1>
+      <p>Tell us what to check. We screen the page, recruit testers, collect their feedback and send you a report with the issues ranked.</p>
+      <div class="actions">
+        <a class="btn" href="order.html">Order a test</a>
+        <a class="btn secondary" href="report.html?order=TR-1001">See a sample report</a>
+      </div>
+    </div>
+
+    <section aria-labelledby="how">
+      <h2 id="how">How it works</h2>
+      <div class="grid">
+        <div class="card"><span class="step-n">1</span><h3>You describe the test</h3><p>Share your page link and what you want checked, such as “can a new visitor sign up?”.</p></div>
+        <div class="card"><span class="step-n">2</span><h3>We screen the page</h3><p>An automated browser confirms the page loads and records what it sees before any person is paid.</p></div>
+        <div class="card"><span class="step-n">3</span><h3>You get a quote</h3><p>A person prices the study, usually within about an hour. You pay only after you see the price.</p></div>
+        <div class="card"><span class="step-n">4</span><h3>Testers try it</h3><p>Recruited testers follow your task and write what happened.</p></div>
+        <div class="card"><span class="step-n">5</span><h3>You read the report</h3><p>Findings are ranked by severity, with each tester’s own words attached.</p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="price-h">
+      <h2 id="price-h">Pricing</h2>
+      <div class="card">
+        <div class="price" id="priceFrom">Quoted per study</div>
+        <p id="priceNote">Every study is priced by a person after a quick feasibility check, so you see the exact cost before you pay.</p>
+        <p style="margin-top:12px"><a class="btn" id="ctaPay" href="order.html">Start an order</a></p>
+      </div>
+    </section>
+
+    <section aria-labelledby="faq">
+      <h2 id="faq">Questions</h2>
+      <div class="card"><h3>What do testers see?</h3><p>The link you give us and the task you wrote. They never see your other orders.</p></div>
+      <div class="card" style="margin-top:12px"><h3>When do I pay?</h3><p>After the quote, through a secure checkout page. A payment is confirmed before the study starts.</p></div>
+    </section>
+  </div>
+</main>
+<footer><div class="wrap">TestRunner hackathon build. <span id="updated"></span></div></footer>
+
+<script>
+(() => {
+  'use strict';
+
+  const money = (n, c) => new Intl.NumberFormat(undefined, { style: 'currency', currency: c || 'USD' }).format(n);
+
+  async function loadStatus() {
+    try {
+      const res = await fetch('status.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    } catch (err) {
+      console.warn('status.json unavailable:', err.message);
+      return null;
+    }
+  }
+
+  function amounts(orders) {
+    return (orders || []).map(o => o.quote && o.quote.amount).filter(a => typeof a === 'number');
+  }
+
+  async function init() {
+    const data = await loadStatus();
+    if (!data) return;
+    if (data.meta && data.meta.mode === 'demo') document.getElementById('demoBanner').hidden = false;
+    if (data.meta && data.meta.updatedAt) {
+      document.getElementById('updated').textContent = 'Data updated ' + new Date(data.meta.updatedAt).toLocaleDateString();
+    }
+    const prices = amounts(data.orders);
+    if (prices.length) {
+      const cur = (data.whop && data.whop.currency) || 'USD';
+      document.getElementById('priceFrom').textContent = 'Recent quotes from ' + money(Math.min(...prices), cur);
+    }
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
